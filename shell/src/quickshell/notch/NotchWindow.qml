@@ -154,9 +154,7 @@ PanelWindow {
     readonly property int animDurationCollapse: 360
     readonly property int animDuration: root.expanded ? animDurationExpand : animDurationCollapse
 
-    readonly property real targetW: root.expanded
-        ? root.expandedWidth
-        : (root.isMusicPlaying ? root.collapsedMusicWidth : root.collapsedWidth)
+    readonly property real targetW: root.expandedWidth
     readonly property real targetH: root.expanded
         ? root.expandedHeight
         : root.collapsedHeight
@@ -165,14 +163,6 @@ PanelWindow {
     property real currentH: targetH
     property real currentRTop: targetConcaveRadius
     property real currentRBottom: targetConvexRadius
-
-    Behavior on currentW {
-        NumberAnimation {
-            duration: root.animDuration
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
-        }
-    }
 
     Behavior on currentH {
         NumberAnimation {

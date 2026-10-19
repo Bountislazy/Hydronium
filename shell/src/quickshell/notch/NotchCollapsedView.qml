@@ -13,7 +13,7 @@ Item {
         ? DateTime.timeShort
         : Qt.formatDateTime(new Date(), "HH:mm")
 
-    implicitWidth: windowRoot ? ((windowRoot.isMusicPlaying ? windowRoot.collapsedMusicWidth : windowRoot.collapsedWidth) - (windowRoot.concaveRadius + 8) * 2) : 180
+    implicitWidth: windowRoot ? (windowRoot.expandedWidth - (windowRoot.concaveRadius + 8) * 2) : 780
     implicitHeight: windowRoot ? windowRoot.collapsedHeight : 34
     width: implicitWidth
     height: implicitHeight
