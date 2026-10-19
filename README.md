@@ -38,10 +38,10 @@
 | ![Desktop Overview](screenshots/desktop.png) | ![Caelestia Dashboard Notch](screenshots/notch_dashboard.png) |
 | *Bidikan layar penuh desktop dengan wallpaper & status bar* | *Dynamic Island yang meluncur turun dari atas layar* |
 
-| Active Window Card (Bar-Attached) | Terminal & Fastfetch |
-| :---: | :---: |
-| ![Active Window Card](screenshots/focus_card.png) | ![Terminal Setup](screenshots/terminal.png) |
-| *Kartu fokus window yang menempel mulus ke bar bawah* | *Alacritty + Fish + Fastfetch + Cava visualizer* |
+| Active Window Card (Bar-Attached) |
+| :---: |
+| ![Active Window Card](screenshots/focus_card.png) | 
+| *Kartu fokus window yang menempel mulus ke bar bawah* |
 
 ---
 
