@@ -389,13 +389,17 @@ PanelWindow {
             }
         }
 
+        antialiasing: true
+        smooth: true
         layer.enabled: true
-        preferredRendererType: Shape.GeometryRenderer
+        layer.smooth: true
+        layer.samples: 8
+        preferredRendererType: Shape.CurveRenderer
         layer.effect: MultiEffect {
             shadowEnabled: true
-            blurMax: 24
-            shadowBlur: 0.65
-            shadowOpacity: 0.70
+            blurMax: 32
+            shadowBlur: 0.70
+            shadowOpacity: 0.92
             shadowColor: "#000000"
             shadowHorizontalOffset: 0
             shadowVerticalOffset: 0

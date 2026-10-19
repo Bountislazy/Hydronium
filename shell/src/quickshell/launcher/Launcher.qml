@@ -3,6 +3,7 @@ import QtQuick.Window
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Shapes
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
@@ -20,10 +21,22 @@ PanelWindow {
     WlrLayershell.namespace: "qs-applauncher"
     WlrLayershell.layer: WlrLayer.Overlay
     focusable: launcherWindow.isVisible
+    WlrLayershell.keyboardFocus: launcherWindow.isVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
 
-    mask: Region { item: topBarHole; intersection: Intersection.Xor }
+    mask: Region {
+        Region {
+            x: 0
+            y: 0
+            width: launcherWindow.width
+            height: launcherWindow.height
+        }
+        Region {
+            item: topBarHole
+            intersection: Intersection.Subtract
+        }
+    }
 
     anchors {
         top: true
@@ -296,8 +309,7 @@ PanelWindow {
         return (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.height) ? s(Config.rawSettings.bar.height) : s(40);
     }
 
-    property bool isBarAttachable: barStyle === "solid" || barStyle === "fill"
-    property bool barMatchesLauncher: isBarAttachable && (attachEdge === barPosition) && !isBarEffectivelyHidden
+    property bool barMatchesLauncher: (attachEdge === barPosition) && !isBarEffectivelyHidden
 
     property string attachEdge: launcherPosition
     property bool isSideAttached: attachEdge === "left" || attachEdge === "right"
@@ -1126,7 +1138,7 @@ PanelWindow {
             }
         }
 
-        property real dynamicCornerRadius: Math.round(Math.max(0, Math.min(launcherWindow.outerCornerRadius, (launcherWindow.isSideAttached ? width : height) * 0.5)))
+        property real dynamicCornerRadius: Math.max(0, Math.min(launcherWindow.outerCornerRadius, (launcherWindow.isSideAttached ? width : height) * 0.5))
 
         x: {
             if (launcherWindow.attachEdge === "left") {
@@ -1151,8 +1163,8 @@ PanelWindow {
         }
 
         width: launcherWindow.isSideAttached
-               ? Math.round(launcherWindow.baseLauncherWidth * animProgress)
-               : Math.round(launcherWindow.baseLauncherWidth)
+               ? (launcherWindow.baseLauncherWidth * animProgress)
+               : launcherWindow.baseLauncherWidth
 
         height: {
             if (launcherWindow.isCentered) {
@@ -1172,90 +1184,125 @@ PanelWindow {
 
         transformOrigin: Item.Center
 
-        GlassFillets {
-            id: launcherFillets
-            card: bgCard
-            filletRadius: launcherWindow.isCentered ? 0 : container.dynamicCornerRadius
-            filletDir: launcherWindow.attachEdge === "top" ? Qt.vector2d(0, -1)
-                     : launcherWindow.attachEdge === "bottom" ? Qt.vector2d(0, 1)
-                     : launcherWindow.attachEdge === "left" ? Qt.vector2d(-1, 0)
-                     : Qt.vector2d(1, 0)
-        }
-
-        ShaderEffect {
-            visible: !launcherWindow.isCentered && container.dynamicCornerRadius > 0.5
-            x: {
-                if (launcherWindow.attachEdge === "left") return 0;
-                if (launcherWindow.attachEdge === "right") return parent.width - container.dynamicCornerRadius;
-                return -container.dynamicCornerRadius;
-            }
-            y: {
-                if (launcherWindow.attachEdge === "bottom") return parent.height - container.dynamicCornerRadius;
-                if (launcherWindow.attachEdge === "left" || launcherWindow.attachEdge === "right") return -container.dynamicCornerRadius;
-                return 0;
-            }
-            width: container.dynamicCornerRadius
-            height: container.dynamicCornerRadius
-            property vector2d itemSize: Qt.vector2d(width, height)
-            property real cornerIndex: {
-                if (launcherWindow.attachEdge === "bottom") return 3.0;
-                if (launcherWindow.attachEdge === "left") return 2.0;
-                if (launcherWindow.attachEdge === "right") return 3.0;
-                return 1.0;
-            }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
-            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
-        }
-
-        ShaderEffect {
-            visible: !launcherWindow.isCentered && container.dynamicCornerRadius > 0.5
-            x: {
-                if (launcherWindow.attachEdge === "left") return 0;
-                if (launcherWindow.attachEdge === "right") return parent.width - container.dynamicCornerRadius;
-                return parent.width;
-            }
-            y: {
-                if (launcherWindow.attachEdge === "bottom") return parent.height - container.dynamicCornerRadius;
-                if (launcherWindow.attachEdge === "left" || launcherWindow.attachEdge === "right") return parent.height;
-                return 0;
-            }
-            width: container.dynamicCornerRadius
-            height: container.dynamicCornerRadius
-            property vector2d itemSize: Qt.vector2d(width, height)
-            property real cornerIndex: {
-                if (launcherWindow.attachEdge === "bottom") return 2.0;
-                if (launcherWindow.attachEdge === "left") return 0.0;
-                if (launcherWindow.attachEdge === "right") return 1.0;
-                return 0.0;
-            }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
-            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
-        }
-
-        Rectangle {
-            id: bgCard
+        Shape {
+            id: launcherShape
+            z: 0
             anchors.fill: parent
-            radius: container.dynamicCornerRadius
-            readonly property bool flatCorners: !launcherWindow.isCentered
-            topLeftRadius: (flatCorners && (launcherWindow.attachEdge === "top" || launcherWindow.attachEdge === "left")) ? 0 : container.dynamicCornerRadius
-            topRightRadius: (flatCorners && (launcherWindow.attachEdge === "top" || launcherWindow.attachEdge === "right")) ? 0 : container.dynamicCornerRadius
-            bottomLeftRadius: (flatCorners && (launcherWindow.attachEdge === "bottom" || launcherWindow.attachEdge === "left")) ? 0 : container.dynamicCornerRadius
-            bottomRightRadius: (flatCorners && (launcherWindow.attachEdge === "bottom" || launcherWindow.attachEdge === "right")) ? 0 : container.dynamicCornerRadius
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
-            border.width: 0
-            border.color: launcherWindow.isCentered ? Qt.alpha(ThemeBackend.surface2, 0.6) : "transparent"
-            clip: true
+            antialiasing: true
+            smooth: true
+            preferredRendererType: Shape.CurveRenderer
 
-            WallpaperBlur {
-                z: -1
-                anchors.fill: parent
-                topLeftRadius: parent.topLeftRadius
-                topRightRadius: parent.topRightRadius
-                bottomLeftRadius: parent.bottomLeftRadius
-                bottomRightRadius: parent.bottomRightRadius
-                filletRadius: launcherFillets.filletRadius
-                filletDir: launcherFillets.filletDir
+            layer.enabled: true
+            layer.smooth: true
+            layer.samples: 8
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                blurMax: 32
+                shadowBlur: 0.70
+                shadowOpacity: 0.90
+                shadowColor: "#000000"
+                shadowHorizontalOffset: 0
+                shadowVerticalOffset: 0
             }
+
+            readonly property real w: container.width
+            readonly property real h: container.height
+            readonly property real effR: Math.max(0, Math.min(container.dynamicCornerRadius, Math.min(w, h) * 0.5))
+            readonly property bool isLeft: launcherWindow.attachEdge === "left"
+            readonly property real effFillet: (isLeft && w > 16) ? Math.min(effR, 28) : 0
+
+            // Left-attached unified vector shape (curves continuously into screen frame)
+            ShapePath {
+                strokeWidth: launcherShape.isLeft ? 1 : -1
+                strokeColor: launcherShape.isLeft ? Qt.alpha(ThemeBackend.surface2, 0.45) : "transparent"
+                fillColor: launcherShape.isLeft ? ThemeBackend.base : "transparent"
+                joinStyle: ShapePath.RoundJoin
+                capStyle: ShapePath.RoundCap
+
+                startX: 0
+                startY: -launcherShape.effFillet
+
+                // Top concave flare into left screen frame
+                PathQuad {
+                    x: launcherShape.effFillet
+                    y: 0
+                    controlX: 0
+                    controlY: 0
+                }
+                // Top border edge
+                PathLine {
+                    x: Math.max(launcherShape.effFillet, launcherShape.w - launcherShape.effR)
+                    y: 0
+                }
+                // Top-right convex rounded corner
+                PathQuad {
+                    x: launcherShape.w
+                    y: launcherShape.effR
+                    controlX: launcherShape.w
+                    controlY: 0
+                }
+                // Right vertical border edge
+                PathLine {
+                    x: launcherShape.w
+                    y: Math.max(launcherShape.effR, launcherShape.h - launcherShape.effR)
+                }
+                // Bottom-right convex rounded corner
+                PathQuad {
+                    x: Math.max(launcherShape.effFillet, launcherShape.w - launcherShape.effR)
+                    y: launcherShape.h
+                    controlX: launcherShape.w
+                    controlY: launcherShape.h
+                }
+                // Bottom border edge
+                PathLine {
+                    x: launcherShape.effFillet
+                    y: launcherShape.h
+                }
+                // Bottom concave flare into left screen frame
+                PathQuad {
+                    x: 0
+                    y: launcherShape.h + launcherShape.effFillet
+                    controlX: 0
+                    controlY: launcherShape.h
+                }
+                // Left flush edge along frame
+                PathLine {
+                    x: 0
+                    y: -launcherShape.effFillet
+                }
+            }
+
+            // Fallback for centered/other position: rounded rectangle with frame styling
+            ShapePath {
+                strokeWidth: !launcherShape.isLeft ? 1 : -1
+                strokeColor: !launcherShape.isLeft ? Qt.alpha(ThemeBackend.surface2, 0.45) : "transparent"
+                fillColor: !launcherShape.isLeft ? ThemeBackend.base : "transparent"
+                joinStyle: ShapePath.RoundJoin
+                capStyle: ShapePath.RoundCap
+
+                startX: launcherShape.effR
+                startY: 0
+
+                PathLine { x: Math.max(launcherShape.effR, launcherShape.w - launcherShape.effR); y: 0 }
+                PathQuad { x: launcherShape.w; y: launcherShape.effR; controlX: launcherShape.w; controlY: 0 }
+                PathLine { x: launcherShape.w; y: Math.max(launcherShape.effR, launcherShape.h - launcherShape.effR) }
+                PathQuad { x: Math.max(launcherShape.effR, launcherShape.w - launcherShape.effR); y: launcherShape.h; controlX: launcherShape.w; controlY: launcherShape.h }
+                PathLine { x: launcherShape.effR; y: launcherShape.h }
+                PathQuad { x: 0; y: launcherShape.h - launcherShape.effR; controlX: 0; controlY: launcherShape.h }
+                PathLine { x: 0; y: launcherShape.effR }
+                PathQuad { x: launcherShape.effR; y: 0; controlX: 0; controlY: 0 }
+            }
+        }
+
+        Item {
+            id: bgCard
+            z: 1
+            anchors.fill: parent
+            property real radius: container.dynamicCornerRadius
+            property real topLeftRadius: radius
+            property real topRightRadius: radius
+            property real bottomLeftRadius: radius
+            property real bottomRightRadius: radius
 
             Item {
                 id: contentContainer
@@ -1479,11 +1526,6 @@ PanelWindow {
                         }
                     }
 
-                    HoverHandler {
-                        id: listHover
-                        enabled: appList.visible
-                    }
-
                     ListView {
                         id: appList
                         anchors.fill: parent
@@ -1515,39 +1557,7 @@ PanelWindow {
                             contentY = 0;
                         }
 
-                        property bool scrolling: false
-
-                        Timer {
-                            id: scrollSettleTimer
-                            interval: 200
-                            onTriggered: appList.scrolling = false
-                        }
-
-                        function refreshHover() {
-                            if (!listHover.hovered || !visible) {
-                                hoverItem = null;
-                                return;
-                            }
-                            const px = contentX + listHover.point.position.x;
-                            const py = contentY + listHover.point.position.y;
-                            const item = itemAt(px, py) || itemAt(px, py - spacing);
-                            hoverItem = (item && !item.isSelected) ? item : null;
-                        }
-
-                        onCountChanged: refreshHover()
-
-                        readonly property point cursorPos: listHover.point.position
-                        onCursorPosChanged: refreshHover()
-
-                        Connections {
-                            target: listHover
-                            function onHoveredChanged() { appList.refreshHover(); }
-                        }
-
                         onContentYChanged: {
-                            scrolling = true;
-                            scrollSettleTimer.restart();
-                            refreshHover();
                             if (contentY < 0 && !moving && !flicking) {
                                 contentY = 0;
                             }
@@ -1590,16 +1600,13 @@ PanelWindow {
                             if (currentIndex >= 0) {
                                 ensureVisible(currentIndex, launcherWindow.isKeyboardNav);
                             }
-                            refreshHover();
                         }
 
                         property Item hoverItem: null
 
                         GlassLens {
                             id: rowHoverLens
-                            parent: appList.contentItem
                             z: -1
-                            instant: appList.scrolling
                             targetX: appList.hoverItem ? appList.hoverItem.x : 0
                             targetY: appList.hoverItem ? appList.hoverItem.y : 0
                             targetWidth: appList.hoverItem ? appList.hoverItem.width : 0
@@ -1661,6 +1668,12 @@ PanelWindow {
 
                             property bool isSelected: index === appList.currentIndex
                             readonly property bool pressed: ma.pressed
+                            readonly property bool lensWanted: ma.containsMouse && !isSelected
+
+                            onLensWantedChanged: {
+                                if (lensWanted) appList.hoverItem = delegateRoot;
+                                else if (appList.hoverItem === delegateRoot) appList.hoverItem = null;
+                            }
                             Component.onDestruction: {
                                 if (appList.hoverItem === delegateRoot) appList.hoverItem = null;
                             }
