@@ -136,13 +136,22 @@ PanelWindow {
     }
 
     readonly property bool isMusicPlaying: (typeof MprisController !== "undefined") && MprisController.isPlaying
+    // ==========================================
+    // CAELESTIA SIGNATURE ANIMATION BEZIERS
+    // Extracted from caelestia-main/hypr/hyprland/animations.lua:
+    // emphasizedDecel: points = { { 0.05, 0.7 }, { 0.1, 1 } }
+    // emphasizedAccel: points = { { 0.3, 0 }, { 0.8, 0.15 } }
+    // ==========================================
+    readonly property var caelestiaDecel: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
+    readonly property var caelestiaAccel: [0.3, 0.0, 0.8, 0.15, 1.0, 1.0]
+
     readonly property real targetConcaveRadius: root.expanded ? 14 : 12
     readonly property real targetConvexRadius: root.expanded ? 22 : 16
     readonly property real concaveRadius: currentRTop
     readonly property real convexRadius: currentRBottom
 
-    readonly property int animDurationExpand: 540
-    readonly property int animDurationCollapse: 380
+    readonly property int animDurationExpand: 500
+    readonly property int animDurationCollapse: 360
     readonly property int animDuration: root.expanded ? animDurationExpand : animDurationCollapse
 
     readonly property real targetW: root.expanded
@@ -160,28 +169,32 @@ PanelWindow {
     Behavior on currentW {
         NumberAnimation {
             duration: root.animDuration
-            easing.type: root.expanded ? Easing.OutCubic : Easing.InOutCubic
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
         }
     }
 
     Behavior on currentH {
         NumberAnimation {
             duration: root.animDuration
-            easing.type: root.expanded ? Easing.OutCubic : Easing.InOutCubic
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
         }
     }
 
     Behavior on currentRTop {
         NumberAnimation {
             duration: root.animDuration
-            easing.type: root.expanded ? Easing.OutCubic : Easing.InOutCubic
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
         }
     }
 
     Behavior on currentRBottom {
         NumberAnimation {
             duration: root.animDuration
-            easing.type: root.expanded ? Easing.OutCubic : Easing.InOutCubic
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
         }
     }
 
@@ -284,7 +297,8 @@ PanelWindow {
         Behavior on y {
             NumberAnimation {
                 duration: root.animDuration
-                easing.type: root.isRevealed ? Easing.OutCubic : Easing.InOutCubic
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: root.isRevealed ? root.caelestiaDecel : root.caelestiaAccel
             }
         }
 
@@ -431,7 +445,7 @@ PanelWindow {
         }
 
         // ==========================================
-        // CONTENT CLIPPING & CROSSFADE
+        // CONTENT CLIPPING & TOP-TO-BOTTOM FLUID MORPH
         // ==========================================
         Item {
             id: contentClipper
@@ -443,20 +457,31 @@ PanelWindow {
                 id: collapsedWrapper
                 anchors.fill: parent
                 opacity: root.expanded ? 0.0 : 1.0
+                y: root.expanded ? -22 : 0
                 scale: root.expanded ? 0.94 : 1.0
                 visible: opacity > 0
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: root.expanded ? 140 : 260
-                        easing.type: Easing.OutCubic
+                        duration: root.expanded ? 180 : 280
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
+                    }
+                }
+
+                Behavior on y {
+                    NumberAnimation {
+                        duration: root.expanded ? 240 : 340
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
                     }
                 }
 
                 Behavior on scale {
                     NumberAnimation {
-                        duration: root.expanded ? 180 : 300
-                        easing.type: Easing.OutCubic
+                        duration: root.expanded ? 200 : 300
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
                     }
                 }
 
@@ -472,12 +497,32 @@ PanelWindow {
                 id: expandedWrapper
                 anchors.fill: parent
                 opacity: root.expanded ? 1.0 : 0.0
+                y: root.expanded ? 0 : -55
+                scale: root.expanded ? 1.0 : 0.97
+                transformOrigin: Item.Top
                 visible: opacity > 0
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: root.expanded ? 340 : 160
-                        easing.type: Easing.OutCubic
+                        duration: root.expanded ? 320 : 180
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
+                    }
+                }
+
+                Behavior on y {
+                    NumberAnimation {
+                        duration: root.animDuration
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
+                    }
+                }
+
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: root.animDuration
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
                     }
                 }
 
@@ -487,16 +532,6 @@ PanelWindow {
                     anchors.top: parent.top
                     anchors.topMargin: 10
                     anchors.horizontalCenter: parent.horizontalCenter
-
-                    scale: root.expanded ? 1.0 : 0.96
-                    transformOrigin: Item.Top
-
-                    Behavior on scale {
-                        NumberAnimation {
-                            duration: root.expanded ? root.animDuration : 200
-                            easing.type: Easing.OutCubic
-                        }
-                    }
                 }
             }
         }
