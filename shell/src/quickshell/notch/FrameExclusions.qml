@@ -11,9 +11,12 @@ Variants {
             required property var modelData
 
             property bool frameEnabled: {
-                if (typeof Config === "undefined" || !Config.rawSettings || !Config.rawSettings.notch) return false;
-                let f = Config.rawSettings.notch.frame;
-                return (f === true || (typeof f === "object" && f && f.enabled !== false));
+                if (typeof Config === "undefined" || !Config.rawSettings || !Config.rawSettings.notch) return true;
+                let n = Config.rawSettings.notch;
+                if (n.frameEnabled !== undefined) return Boolean(n.frameEnabled);
+                let f = n.frame;
+                if (f === true || (typeof f === "object" && f && f.enabled !== false)) return true;
+                return true;
             }
             property real frameThickness: {
                 if (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.notch && Config.rawSettings.notch.frameThickness !== undefined) {
@@ -28,6 +31,21 @@ Variants {
                 return 8;
             }
             readonly property real totalExclusion: (exclScope.frameEnabled && !exclScope.hasFullscreen) ? (exclScope.frameThickness + exclScope.windowGap) : 0
+
+            property real barHeight: {
+                if (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.height !== undefined) {
+                    return Number(Config.rawSettings.bar.height);
+                }
+                return 40;
+            }
+            property bool autohide: {
+                if (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.autohide !== undefined) {
+                    return Boolean(Config.rawSettings.bar.autohide);
+                }
+                return false;
+            }
+            readonly property real bottomExclusion: (exclScope.hasFullscreen || exclScope.autohide) ? 0 : exclScope.barHeight
+
             property var activeToplevel: ToplevelManager.activeToplevel
             property bool hasFullscreen: {
                 if (!activeToplevel || !activeToplevel.fullscreen) return false;
@@ -80,6 +98,21 @@ Variants {
                 mask: Region {}
                 color: "transparent"
                 implicitWidth: exclScope.totalExclusion
+            }
+
+            PanelWindow {
+                id: frameExclusionBottom
+                screen: exclScope.modelData
+                WlrLayershell.namespace: "frame-exclusion-bottom"
+                WlrLayershell.layer: WlrLayer.Top
+                anchors.bottom: true
+                anchors.left: true
+                anchors.right: true
+                exclusionMode: ExclusionMode.Normal
+                exclusiveZone: exclScope.bottomExclusion
+                mask: Region {}
+                color: "transparent"
+                implicitHeight: exclScope.bottomExclusion
             }
         }
     }

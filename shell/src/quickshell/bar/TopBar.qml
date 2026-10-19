@@ -572,7 +572,7 @@ Item {
         bottomRightRadius: isFill ? 0 : radius
         border.width: (isSolid || isFill) ? 0 : 1
         border.color: (isSolid || isFill) ? "transparent" : Qt.alpha(ThemeBackend.surface0, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
-        visible: (isSolid || isFill) && (barWindow ? !barWindow.positionChanging : true)
+        visible: (!barWindow || !barWindow.isUnified) && (isSolid || isFill) && (barWindow ? !barWindow.positionChanging : true)
         opacity: visible ? 1.0 : 0.0
 
         WallpaperBlur {
@@ -669,7 +669,7 @@ Item {
         y: barWindow ? (contentWrapper.barAtBottom ? (barWindow.baseOffsetY + barWindow.barHeight - height) : barWindow.baseOffsetY) : 0
         width: radius
         height: radius
-        visible: !ThemeBackend.liquidGlass && contentWrapper.isFill && radius > 0.5 && (barWindow ? !barWindow.positionChanging : true)
+        visible: (!barWindow || !barWindow.isUnified) && !ThemeBackend.liquidGlass && contentWrapper.isFill && radius > 0.5 && (barWindow ? !barWindow.positionChanging : true)
         opacity: (visible && (!barWindow || barWindow.isRevealed)) ? 1.0 : 0.0
         z: 0
 
@@ -692,7 +692,7 @@ Item {
         y: barWindow ? (contentWrapper.barAtBottom ? (barWindow.baseOffsetY + barWindow.barHeight - height) : barWindow.baseOffsetY) : 0
         width: radius
         height: radius
-        visible: !ThemeBackend.liquidGlass && contentWrapper.isFill && radius > 0.5 && (barWindow ? !barWindow.positionChanging : true)
+        visible: (!barWindow || !barWindow.isUnified) && !ThemeBackend.liquidGlass && contentWrapper.isFill && radius > 0.5 && (barWindow ? !barWindow.positionChanging : true)
         opacity: (visible && (!barWindow || barWindow.isRevealed)) ? 1.0 : 0.0
         z: 0
 
@@ -728,7 +728,7 @@ Item {
             filletDir: Qt.vector2d(modelData, 0)
             rim: 0
             filletRadius: (ThemeBackend.liquidGlass && contentWrapper.outerCornersReady) ? contentWrapper.cornerRadius : 0
-            visible: filletRadius > 0.5 && (barWindow ? !barWindow.positionChanging : true)
+            visible: (!barWindow || !barWindow.isUnified) && filletRadius > 0.5 && (barWindow ? !barWindow.positionChanging : true)
             opacity: (visible && (!barWindow || barWindow.isRevealed)) ? 1.0 : 0.0
             z: 0
 
@@ -746,7 +746,7 @@ Item {
         filletRadius: ThemeBackend.liquidGlass && contentWrapper.isFill
             ? Math.min(contentWrapper.cornerRadius, Math.max(0, solidBackground.x), Math.max(0, contentWrapper.width - solidBackground.x - solidBackground.width)) * contentWrapper.fillAttachProgress
             : 0
-        visible: filletRadius > 0.5 && (barWindow ? !barWindow.positionChanging : true)
+        visible: (!barWindow || !barWindow.isUnified) && filletRadius > 0.5 && (barWindow ? !barWindow.positionChanging : true)
         opacity: (visible && (!barWindow || barWindow.isRevealed)) ? 1.0 : 0.0
         z: 0
 
