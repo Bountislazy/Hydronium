@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Shapes
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
@@ -148,8 +149,21 @@ PanelWindow {
 
     readonly property bool hasLiveHyprland: (typeof Hyprland !== "undefined" && Hyprland.activeToplevel && Hyprland.activeToplevel.wayland !== null && Hyprland.activeToplevel.wayland !== undefined)
 
+    readonly property var captureSourceTarget: {
+        if (hasLiveHyprland) return Hyprland.activeToplevel.wayland;
+        if (focusCardWindow.screen) return focusCardWindow.screen;
+        if (typeof Quickshell !== "undefined" && Quickshell.screens && Quickshell.screens.length > 0) return Quickshell.screens[0];
+        return null;
+    }
+
+    readonly property bool hasLivePreview: captureSourceTarget !== null
+
+    // Caelestia fluid pop bounce animation curves (matching Notch spring curves)
+    readonly property var caelestiaPopBounce: [0.38, 1.22, 0.22, 1.0, 1.0, 1.0]
+    readonly property var caelestiaAccel: [0.3, 0.0, 0.8, 0.15, 1.0, 1.0]
+
     // Geometry calculation for seamless bar attachment
-    property real cardWidth: s(320)
+    property real cardWidth: s(360)
     property real targetCardHeight: contentCol.implicitHeight > 0 ? (contentCol.implicitHeight + s(20)) : s(165)
     property real cardHeight: targetCardHeight
 
@@ -241,8 +255,9 @@ PanelWindow {
             property real animProgress: focusCardWindow.isVisible ? 1.0 : 0.0
             Behavior on animProgress {
                 NumberAnimation {
-                    duration: focusCardWindow.isVisible ? 300 : 200
-                    easing.type: focusCardWindow.isVisible ? Easing.OutCubic : Easing.InCubic
+                    duration: focusCardWindow.isVisible ? 420 : 250
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: focusCardWindow.isVisible ? focusCardWindow.caelestiaPopBounce : focusCardWindow.caelestiaAccel
                 }
             }
 
@@ -296,8 +311,8 @@ PanelWindow {
                 return focusCardWindow.cardHeight;
             }
 
-            opacity: animProgress
-            scale: !focusCardWindow.isSolid ? (0.94 + (0.06 * animProgress)) : 1.0
+            opacity: Math.max(0.0, Math.min(1.0, animProgress * 1.5))
+            scale: 0.88 + (0.12 * animProgress)
 
             transformOrigin: {
                 if (focusCardWindow.isSideBar) {
@@ -387,6 +402,19 @@ PanelWindow {
                 border.width: focusCardWindow.isSolid ? 0 : 1
                 border.color: (typeof ThemeBackend !== "undefined") ? Qt.alpha(ThemeBackend.surface0, 0.8) : "#313244"
                 clip: true
+
+                layer.enabled: true
+                layer.smooth: true
+                layer.samples: 8
+                layer.effect: MultiEffect {
+                    shadowEnabled: true
+                    blurMax: 32
+                    shadowBlur: 0.70
+                    shadowOpacity: 0.90
+                    shadowColor: "#000000"
+                    shadowHorizontalOffset: 0
+                    shadowVerticalOffset: 0
+                }
 
                 WallpaperBlur {
                     z: -1
@@ -576,22 +604,91 @@ PanelWindow {
                         }
                     }
 
-                    // 4. Live Screencopy Preview (Native Hyprland Stream)
+                    // 4. Live Screencopy Preview (Universal Wayland + Niri + Hyprland)
                     Rectangle {
-                        visible: focusCardWindow.hasLiveHyprland
+                        id: previewBox
+                        visible: focusCardWindow.hasLivePreview
                         Layout.fillWidth: true
-                        Layout.preferredHeight: visible ? focusCardWindow.s(130) : 0
-                        radius: focusCardWindow.s(8)
+                        Layout.preferredHeight: visible ? focusCardWindow.s(170) : 0
+                        radius: focusCardWindow.s(10)
                         color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.mantle : "#11111b"
                         border.width: 1
-                        border.color: (typeof ThemeBackend !== "undefined") ? Qt.alpha(ThemeBackend.surface0, 0.8) : "#313244"
+                        border.color: (typeof ThemeBackend !== "undefined") ? Qt.alpha(ThemeBackend.surface1, 0.8) : "#313244"
                         clip: true
 
                         ScreencopyView {
+                            id: screencopyStream
                             anchors.fill: parent
-                            captureSource: focusCardWindow.hasLiveHyprland ? Hyprland.activeToplevel.wayland : null
-                            live: focusCardWindow.isVisible && visible
+                            captureSource: focusCardWindow.captureSourceTarget
+                            live: focusCardWindow.isVisible && previewBox.visible
                             paintCursor: false
+                        }
+
+                        // Live pulse indicator overlay badge
+                        Rectangle {
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                            anchors.margins: focusCardWindow.s(8)
+                            height: focusCardWindow.s(18)
+                            width: liveBadgeRow.implicitWidth + focusCardWindow.s(12)
+                            radius: height / 2
+                            color: Qt.rgba(0, 0, 0, 0.65)
+                            border.width: 1
+                            border.color: Qt.rgba(255, 255, 255, 0.18)
+                            z: 2
+
+                            RowLayout {
+                                id: liveBadgeRow
+                                anchors.centerIn: parent
+                                spacing: focusCardWindow.s(5)
+
+                                Rectangle {
+                                    width: focusCardWindow.s(6)
+                                    height: focusCardWindow.s(6)
+                                    radius: 3
+                                    color: screencopyStream.hasContent ? "#a6e3a1" : "#f38ba8"
+
+                                    SequentialAnimation on opacity {
+                                        running: focusCardWindow.isVisible
+                                        loops: Animation.Infinite
+                                        NumberAnimation { to: 0.3; duration: 800; easing.type: Easing.InOutSine }
+                                        NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutSine }
+                                    }
+                                }
+
+                                Text {
+                                    text: screencopyStream.hasContent ? "LIVE PREVIEW" : "CONNECTING"
+                                    font.family: (typeof ThemeBackend !== "undefined") ? ThemeBackend.fontFamily : Qt.application.font.family
+                                    font.pixelSize: focusCardWindow.s(8)
+                                    font.weight: Font.Bold
+                                    color: "#ffffff"
+                                }
+                            }
+                        }
+
+                        // Fallback indicator while stream connects
+                        Item {
+                            anchors.centerIn: parent
+                            visible: !screencopyStream.hasContent
+                            z: 1
+
+                            ColumnLayout {
+                                anchors.centerIn: parent
+                                spacing: focusCardWindow.s(6)
+
+                                Text {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: "🖥️"
+                                    font.pixelSize: focusCardWindow.s(22)
+                                }
+                                Text {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: "Menghubungkan live preview..."
+                                    font.family: (typeof ThemeBackend !== "undefined") ? ThemeBackend.fontFamily : Qt.application.font.family
+                                    font.pixelSize: focusCardWindow.s(10)
+                                    color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.subtext0 : "#a6adc8"
+                                }
+                            }
                         }
                     }
 
