@@ -182,7 +182,8 @@ PanelWindow {
     // CAELESTIA SIGNATURE FLUID MORPH CURVES
     // Fast, smooth, with subtle organic spring bounce
     // ==========================================
-    readonly property var caelestiaMorphExpand: [0.38, 1.15, 0.22, 1.0, 1.0, 1.0]
+    readonly property var caelestiaMorphExpand: [0.38, 1.22, 0.22, 1.0, 1.0, 1.0]
+    readonly property var caelestiaDropBounce: [0.38, 1.18, 0.22, 1.0, 1.0, 1.0]
     readonly property var caelestiaSmoothExpand: [0.05, 0.0, 0.133333, 0.06, 0.166667, 0.4, 0.208333, 0.82, 0.25, 1.0, 1.0, 1.0]
     readonly property var caelestiaAccel: [0.3, 0.0, 0.8, 0.15, 1.0, 1.0]
 
@@ -191,8 +192,8 @@ PanelWindow {
     readonly property real concaveRadius: currentRTop
     readonly property real convexRadius: currentRBottom
 
-    readonly property int animDurationExpand: 420
-    readonly property int animDurationCollapse: 320
+    readonly property int animDurationExpand: 440
+    readonly property int animDurationCollapse: 300
     readonly property int animDuration: root.expanded ? animDurationExpand : animDurationCollapse
 
     readonly property real targetW: root.expandedWidth
@@ -534,9 +535,9 @@ PanelWindow {
 
         Behavior on y {
             NumberAnimation {
-                duration: root.animDuration
+                duration: root.isRevealed ? 420 : 280
                 easing.type: Easing.BezierSpline
-                easing.bezierCurve: root.isRevealed ? root.caelestiaSmoothExpand : root.caelestiaAccel
+                easing.bezierCurve: root.isRevealed ? root.caelestiaDropBounce : root.caelestiaAccel
             }
         }
 
