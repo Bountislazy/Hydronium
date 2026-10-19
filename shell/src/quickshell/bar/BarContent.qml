@@ -103,9 +103,19 @@ Item {
     }
     property real barOpacity: ThemeBackend.elementOpacity
 
-    HoverHandler {
-        id: barHover
-        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+    Item {
+        id: barHoverZone
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: isVertical ? undefined : (barPosition === "bottom" ? parent.bottom : undefined)
+        anchors.top: isVertical ? undefined : (barPosition === "top" ? parent.top : undefined)
+        height: isVertical ? parent.height : barRoot.barHeight
+        width: isVertical ? barRoot.barHeight : parent.width
+
+        HoverHandler {
+            id: barHover
+            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        }
     }
 
     Timer {
@@ -123,7 +133,10 @@ Item {
 
     Connections {
         target: barHover
-        function onHoveredChanged() { barRoot.checkHideTimer(); }
+        function onHoveredChanged() {
+            console.log("[BAR HOVER EVENT] hovered=" + barHover.hovered);
+            barRoot.checkHideTimer();
+        }
     }
 
     property bool isRevealed: {

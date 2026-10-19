@@ -37,26 +37,54 @@ PanelWindow {
         Region {
             item: edgeTrigger
         }
+        // Top border strip
         Region {
-            item: (root.frameEnabled && !root.hasFullscreen) ? topMaskStrip : null
+            x: 0
+            y: 0
+            width: root.width
+            height: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
         }
+        // Left border strip
         Region {
-            item: (root.frameEnabled && !root.hasFullscreen) ? leftMaskStrip : null
+            x: 0
+            y: 0
+            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
+            height: (root.frameEnabled && !root.hasFullscreen) ? Math.max(0, root.height - root.effectiveBarHeight) : 0
         }
+        // Right border strip
         Region {
-            item: (root.frameEnabled && !root.hasFullscreen) ? rightMaskStrip : null
+            x: root.width - root.frameThickness
+            y: 0
+            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
+            height: (root.frameEnabled && !root.hasFullscreen) ? Math.max(0, root.height - root.effectiveBarHeight) : 0
         }
+        // Bottom border strip (only when no bottom bar)
         Region {
-            item: (root.frameEnabled && !root.hasFullscreen && bottomMaskStrip.visible) ? bottomMaskStrip : null
+            x: 0
+            y: root.height - root.frameThickness
+            width: (root.frameEnabled && !root.hasFullscreen && !root.hasBottomBar) ? root.width : 0
+            height: (root.frameEnabled && !root.hasFullscreen && !root.hasBottomBar) ? root.frameThickness : 0
         }
+        // Bottom bar interactive region (always covers the full bar when bottom bar is active)
         Region {
-            item: (root.hasBottomBar && !root.hasFullscreen && bottomBarMask.visible) ? bottomBarMask : null
+            x: 0
+            y: root.height - Math.max(root.effectiveBarHeight, root.barHeight)
+            width: (root.hasBottomBar && !root.hasFullscreen) ? root.width : 0
+            height: (root.hasBottomBar && !root.hasFullscreen) ? Math.max(root.effectiveBarHeight, root.barHeight) : 0
         }
+        // Left scoop fillet interactive region
         Region {
-            item: (root.hasBottomBar && !root.hasFullscreen && leftFilletMask.visible) ? leftFilletMask : null
+            x: 0
+            y: Math.max(0, root.height - root.effectiveBarHeight - root.frameRounding)
+            width: (root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? (root.frameThickness + root.frameRounding) : 0
+            height: (root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? root.frameRounding : 0
         }
+        // Right scoop fillet interactive region
         Region {
-            item: (root.hasBottomBar && !root.hasFullscreen && rightFilletMask.visible) ? rightFilletMask : null
+            x: root.width - (root.frameThickness + root.frameRounding)
+            y: Math.max(0, root.height - root.effectiveBarHeight - root.frameRounding)
+            width: (root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? (root.frameThickness + root.frameRounding) : 0
+            height: (root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? root.frameRounding : 0
         }
     }
 
@@ -314,76 +342,7 @@ PanelWindow {
         }
     }
 
-    // ==========================================
-    // FRAME MASK HELPER (Interactive input regions)
-    // ==========================================
-    Item {
-        id: frameMaskHelper
-        anchors.fill: parent
-        visible: false
 
-        Item {
-            id: topMaskStrip
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: root.frameThickness
-        }
-
-        Item {
-            id: leftMaskStrip
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: root.effectiveBarHeight
-            anchors.left: parent.left
-            width: root.frameThickness
-        }
-
-        Item {
-            id: rightMaskStrip
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: root.effectiveBarHeight
-            anchors.right: parent.right
-            width: root.frameThickness
-        }
-
-        Item {
-            id: bottomMaskStrip
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: root.frameThickness
-            visible: root.effectiveBarHeight <= 0
-        }
-
-        Item {
-            id: bottomBarMask
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: root.effectiveBarHeight
-            visible: root.effectiveBarHeight > 0
-        }
-
-        Item {
-            id: leftFilletMask
-            x: 0
-            y: root.height - root.effectiveBarHeight - root.frameRounding
-            width: root.frameThickness + root.frameRounding
-            height: root.frameRounding
-            visible: root.effectiveBarHeight > 0
-        }
-
-        Item {
-            id: rightFilletMask
-            x: root.width - (root.frameThickness + root.frameRounding)
-            y: root.height - root.effectiveBarHeight - root.frameRounding
-            width: root.frameThickness + root.frameRounding
-            height: root.frameRounding
-            visible: root.effectiveBarHeight > 0
-        }
-    }
 
     // ==========================================
     // CAELESTIA UNIFIED SCREEN FRAME + NOTCH + BAR SHAPE
