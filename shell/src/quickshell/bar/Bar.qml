@@ -378,6 +378,32 @@ Variants {
                 id: contentWrapper
                 barWindow: barWindowRoot
             }
+
+            Binding {
+                target: (typeof NotchController !== "undefined") ? NotchController : null
+                property: "barHeight"
+                value: barWindowRoot.barHeight
+            }
+            Binding {
+                target: (typeof NotchController !== "undefined") ? NotchController : null
+                property: "barPosition"
+                value: barWindowRoot.barPosition
+            }
+            Binding {
+                target: (typeof NotchController !== "undefined") ? NotchController : null
+                property: "barRevealed"
+                value: barWindowRoot.isRevealed
+            }
+            Binding {
+                target: (typeof NotchController !== "undefined") ? NotchController : null
+                property: "barIsFill"
+                value: barWindowRoot.isFill
+            }
+            Binding {
+                target: (typeof NotchController !== "undefined") ? NotchController : null
+                property: "barHideOffset"
+                value: (contentWrapper && contentWrapper.hideOffsetY !== undefined) ? contentWrapper.hideOffsetY : (verticalWrapper ? verticalWrapper.hideOffsetX : 0)
+            }
         }
     }
 }

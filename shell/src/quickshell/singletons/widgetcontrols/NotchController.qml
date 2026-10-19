@@ -7,6 +7,13 @@ import "../../"
 Item {
     id: controller
 
+    // Linked Geometry State (between Serpantium Bar and Screen Frame)
+    property real barHeight: 40
+    property string barPosition: "bottom"
+    property bool barRevealed: true
+    property real barHideOffset: 0
+    property bool barIsFill: true
+
     signal toggleRequested(string screenName)
     signal expandRequested(string screenName)
     signal collapseRequested(string screenName)

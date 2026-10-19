@@ -151,14 +151,25 @@ PanelWindow {
     // ==========================================
     property bool frameEnabled: rawNotchSettings.frameEnabled !== undefined ? Boolean(rawNotchSettings.frameEnabled) : true
     property real frameThickness: rawNotchSettings.frameThickness !== undefined ? Number(rawNotchSettings.frameThickness) : 10
-    property real frameRounding: rawNotchSettings.frameRounding !== undefined ? Number(rawNotchSettings.frameRounding) : 12
-    readonly property color frameColor: Qt.alpha(ThemeBackend.base, (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.opacity !== undefined) ? (Config.rawSettings.bar.opacity / 100.0) : ThemeBackend.elementOpacity)
+    property real frameRounding: rawNotchSettings.frameRounding !== undefined ? Number(rawNotchSettings.frameRounding) : (typeof ThemeBackend !== "undefined" && ThemeBackend.borderRadius ? ThemeBackend.borderRadius : 12)
+    readonly property color frameColor: Qt.alpha(ThemeBackend.base, (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.opacity !== undefined) ? (Config.rawSettings.bar.opacity / 100.0) : 1.0)
+
     readonly property real barHeight: {
+        if (typeof NotchController !== "undefined" && NotchController.barHeight > 0) {
+            return NotchController.barHeight;
+        }
         if (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.height !== undefined) {
             return Number(Config.rawSettings.bar.height);
         }
-        return 46;
+        return 40;
     }
+    readonly property string barPosition: (typeof NotchController !== "undefined") ? NotchController.barPosition : "bottom"
+    readonly property bool hasBottomBar: barPosition === "bottom" && barHeight > 0
+    property real animatedBarOffset: (typeof NotchController !== "undefined") ? NotchController.barHideOffset : 0
+    Behavior on animatedBarOffset {
+        NumberAnimation { duration: 300; easing.type: Easing.OutQuint }
+    }
+    readonly property real effectiveBarHeight: hasBottomBar ? Math.max(0, barHeight - animatedBarOffset) : 0
     readonly property bool hasFullscreen: {
         if (typeof ToplevelManager !== "undefined" && ToplevelManager.activeToplevel) {
             return Boolean(ToplevelManager.activeToplevel.fullscreen);
@@ -318,7 +329,7 @@ PanelWindow {
             id: leftMaskStrip
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: root.barHeight
+            anchors.bottomMargin: root.effectiveBarHeight
             anchors.left: parent.left
             width: root.frameThickness
         }
@@ -327,7 +338,7 @@ PanelWindow {
             id: rightMaskStrip
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: root.barHeight
+            anchors.bottomMargin: root.effectiveBarHeight
             anchors.right: parent.right
             width: root.frameThickness
         }
@@ -338,7 +349,7 @@ PanelWindow {
             anchors.left: parent.left
             anchors.right: parent.right
             height: root.frameThickness
-            visible: root.barHeight <= 0
+            visible: root.effectiveBarHeight <= 0
         }
     }
 
@@ -376,8 +387,8 @@ PanelWindow {
         readonly property real h: root.height
         readonly property real t: root.frameThickness
         readonly property real r: Math.max(8, root.frameRounding)
-        readonly property bool hasBar: root.barHeight > 0
-        readonly property real barH: root.barHeight > 0 ? root.barHeight : t
+        readonly property bool hasBar: root.hasBottomBar
+        readonly property real barH: root.effectiveBarHeight
         readonly property real bottomOuterY: hasBar ? (h - barH) : h
         readonly property real bottomInnerY: hasBar ? (h - barH) : (h - t)
 
