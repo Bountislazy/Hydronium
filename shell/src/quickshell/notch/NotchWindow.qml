@@ -283,9 +283,7 @@ PanelWindow {
         y: root.autoHide
             ? (root.isRevealed ? root.topOffset : (root.topOffset - root.currentH))
             : root.topOffset
-        opacity: root.autoHide
-            ? (root.isRevealed ? 1.0 : 0.0)
-            : 1.0
+        opacity: 1.0
         visible: !root.autoHide || root.isRevealed || y > (-root.currentH + 1)
 
         Behavior on y {
@@ -293,13 +291,6 @@ PanelWindow {
                 duration: root.animDuration
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: root.isRevealed ? root.caelestiaSmoothExpand : root.caelestiaAccel
-            }
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Math.round(root.animDuration * 0.7)
-                easing.type: Easing.OutCubic
             }
         }
 
@@ -450,21 +441,13 @@ PanelWindow {
             Item {
                 id: collapsedWrapper
                 anchors.fill: parent
-                opacity: root.expanded ? 0.0 : 1.0
-                y: root.expanded ? -16 : 0
-                visible: opacity > 0
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: root.expanded ? 180 : 260
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: root.caelestiaEffects
-                    }
-                }
+                opacity: 1.0
+                y: root.expanded ? -root.collapsedHeight : 0
+                visible: !root.expanded || y > -root.collapsedHeight
 
                 Behavior on y {
                     NumberAnimation {
-                        duration: root.expanded ? 220 : 340
+                        duration: root.expanded ? 240 : 360
                         easing.type: Easing.BezierSpline
                         easing.bezierCurve: root.expanded ? root.caelestiaAccel : root.caelestiaMorphExpand
                     }
@@ -481,17 +464,9 @@ PanelWindow {
             Item {
                 id: expandedWrapper
                 anchors.fill: parent
-                opacity: root.expanded ? 1.0 : 0.0
-                y: root.expanded ? 0 : -36
-                visible: opacity > 0
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: root.expanded ? 320 : 180
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: root.caelestiaEffects
-                    }
-                }
+                opacity: 1.0
+                y: root.expanded ? 0 : -root.collapsedHeight
+                visible: root.expanded || currentH > (root.collapsedHeight + 2)
 
                 Behavior on y {
                     NumberAnimation {
