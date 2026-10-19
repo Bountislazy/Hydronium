@@ -7,6 +7,8 @@ import Quickshell.Services.Mpris
 import Quickshell.Services.UPower
 import "../singletons/environment"
 import "../singletons/info"
+import "../singletons/audio"
+import "../reusables"
 import "../"
 
 Item {
@@ -18,6 +20,27 @@ Item {
     // TAB NAVIGATION STATE
     // ==========================================
     property int currentTab: 0
+
+    // Lyrics subscription when Media Tab is active and Notch is visible
+    readonly property bool shouldSubscribeLyrics: expandedRoot.visible && expandedRoot.currentTab === 1
+    onShouldSubscribeLyricsChanged: {
+        if (typeof Lyrics !== "undefined") {
+            if (shouldSubscribeLyrics) Lyrics.subscribe();
+            else Lyrics.unsubscribe();
+        }
+    }
+
+    Component.onCompleted: {
+        if (typeof Lyrics !== "undefined" && shouldSubscribeLyrics) {
+            Lyrics.subscribe();
+        }
+    }
+
+    Component.onDestruction: {
+        if (typeof Lyrics !== "undefined" && shouldSubscribeLyrics) {
+            Lyrics.unsubscribe();
+        }
+    }
 
     // Timer for time update
     property var currentTime: new Date()
@@ -1081,6 +1104,64 @@ Item {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: if (expandedRoot.activePlayer) expandedRoot.activePlayer.next()
+                            }
+                        }
+                    }
+
+                    // Lyrics Container (Positioned directly below playback controls)
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Layout.minimumHeight: 110
+                        radius: 14
+                        color: (typeof ThemeBackend !== "undefined") ? Qt.alpha(ThemeBackend.surface0, 0.40) : "#1e1e2e"
+                        border.width: 1
+                        border.color: (typeof ThemeBackend !== "undefined") ? Qt.alpha(ThemeBackend.surface1, 0.30) : "#313244"
+                        clip: true
+
+                        // Synchronized interactive lyrics view
+                        LyricsView {
+                            id: notchLyricsView
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            alignment: "center"
+                            sideMargin: 12
+                            baseActiveFont: 13
+                            lineHeight: 22
+                            lineSpacing: 4
+                            activeLineColor: (typeof ThemeBackend !== "undefined") ? ThemeBackend.mauve : "#cba6f7"
+                            inactiveLineColor: (typeof ThemeBackend !== "undefined") ? ThemeBackend.subtext0 : "#a6adc8"
+                            inactiveOpacity: 0.45
+                            fontFamily: (typeof ThemeBackend !== "undefined") ? ThemeBackend.fontFamily : "sans-serif"
+                            fontWeight: Font.Bold
+                            centerRatio: 0.5
+                            visible: typeof Lyrics !== "undefined" && Lyrics.hasLyrics
+                        }
+
+                        // Fallback state when lyrics are loading or unavailable
+                        ColumnLayout {
+                            anchors.centerIn: parent
+                            spacing: 6
+                            visible: typeof Lyrics === "undefined" || !Lyrics.hasLyrics
+
+                            Text {
+                                Layout.alignment: Qt.AlignHCenter
+                                text: (typeof Lyrics !== "undefined" && Lyrics.loading) ? "󰔛" : (expandedRoot.hasPlayer ? "󰎈" : "󰝛")
+                                font.family: (typeof ThemeBackend !== "undefined") ? ThemeBackend.iconFont : Qt.application.font.family
+                                font.pixelSize: 22
+                                color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.subtext0 : "#a6adc8"
+                                opacity: 0.7
+                            }
+
+                            Text {
+                                Layout.alignment: Qt.AlignHCenter
+                                text: (typeof Lyrics !== "undefined" && Lyrics.loading)
+                                    ? "Loading lyrics..."
+                                    : (expandedRoot.hasPlayer ? "No lyrics available for this track" : "No media playing")
+                                font.family: (typeof ThemeBackend !== "undefined") ? ThemeBackend.fontFamily : Qt.application.font.family
+                                font.pixelSize: 11
+                                color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.subtext0 : "#a6adc8"
+                                opacity: 0.6
                             }
                         }
                     }
