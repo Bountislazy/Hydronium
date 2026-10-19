@@ -175,9 +175,23 @@ if [ -d "$SCRIPT_DIR/wallpapers" ]; then
 fi
 
 # ------------------------------------------------------------------------------
-# 7. Reload or Instructions
+# 7. Prevent Conflicting Wallpaper Services
 # ------------------------------------------------------------------------------
-echo -e "\n\033[1;36m[5/5] Finalizing setup...\033[0m"
+echo -e "\n\033[1;36m[5/6] Checking for conflicting wallpaper services...\033[0m"
+CONFLICTING_SERVICES=("skwd-walld.service" "hyprpaper.service" "swww.service" "swaybg.service")
+for svc in "${CONFLICTING_SERVICES[@]}"; do
+    if systemctl --user is-enabled "$svc" &>/dev/null; then
+        echo -e "    -> Disabling conflicting service: $svc"
+        systemctl --user stop "$svc" 2>/dev/null || true
+        systemctl --user disable "$svc" 2>/dev/null || true
+    fi
+done
+killall -9 skwd-wall-still 2>/dev/null || true
+
+# ------------------------------------------------------------------------------
+# 8. Reload or Instructions
+# ------------------------------------------------------------------------------
+echo -e "\n\033[1;36m[6/6] Finalizing setup...\033[0m"
 if pgrep -x "quickshell" > /dev/null; then
     if [ -f "$SHELL_DEST/src/scripts/reload.sh" ]; then
         echo -e "\033[0;32m[✓] Reloading Quickshell daemon...\033[0m"
