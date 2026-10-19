@@ -34,48 +34,17 @@ PanelWindow {
         Region {
             item: edgeTrigger
         }
-        // Screen Frame regions (hollow central screen passes all input through)
         Region {
-            x: 0
-            y: 0
-            width: (root.frameEnabled && !root.hasFullscreen) ? root.width : 0
-            height: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
+            item: (root.frameEnabled && !root.hasFullscreen) ? topFrame : null
         }
         Region {
-            x: 0
-            y: 0
-            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
-            height: (root.frameEnabled && !root.hasFullscreen) ? (root.height - root.barHeight) : 0
+            item: (root.frameEnabled && !root.hasFullscreen) ? leftFrame : null
         }
         Region {
-            x: (root.frameEnabled && !root.hasFullscreen) ? (root.width - root.frameThickness) : 0
-            y: 0
-            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
-            height: (root.frameEnabled && !root.hasFullscreen) ? (root.height - root.barHeight) : 0
+            item: (root.frameEnabled && !root.hasFullscreen) ? rightFrame : null
         }
         Region {
-            x: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
-            y: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
-            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
-            height: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
-        }
-        Region {
-            x: (root.frameEnabled && !root.hasFullscreen) ? (root.width - root.frameThickness - root.frameRounding) : 0
-            y: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
-            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
-            height: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
-        }
-        Region {
-            x: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
-            y: (root.frameEnabled && !root.hasFullscreen) ? (root.height - root.barHeight - root.frameRounding) : 0
-            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
-            height: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
-        }
-        Region {
-            x: (root.frameEnabled && !root.hasFullscreen) ? (root.width - root.frameThickness - root.frameRounding) : 0
-            y: (root.frameEnabled && !root.hasFullscreen) ? (root.height - root.barHeight - root.frameRounding) : 0
-            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
-            height: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
+            item: (root.frameEnabled && !root.hasFullscreen && bottomFrame.visible) ? bottomFrame : null
         }
     }
 
@@ -182,7 +151,8 @@ PanelWindow {
     // ==========================================
     property bool frameEnabled: rawNotchSettings.frameEnabled !== undefined ? Boolean(rawNotchSettings.frameEnabled) : true
     property real frameThickness: rawNotchSettings.frameThickness !== undefined ? Number(rawNotchSettings.frameThickness) : 10
-    property real frameRounding: rawNotchSettings.frameRounding !== undefined ? Number(rawNotchSettings.frameRounding) : 24
+    property real frameRounding: rawNotchSettings.frameRounding !== undefined ? Number(rawNotchSettings.frameRounding) : 12
+    readonly property color frameColor: Qt.alpha(ThemeBackend.base, (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.opacity !== undefined) ? (Config.rawSettings.bar.opacity / 100.0) : ThemeBackend.elementOpacity)
     readonly property real barHeight: {
         if (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.height !== undefined) {
             return Number(Config.rawSettings.bar.height);
@@ -356,112 +326,63 @@ PanelWindow {
             shadowVerticalOffset: 0
         }
 
-        // 1. Top border (merges flush with notch top flares)
+        // 1. Top border (Atas: 0, 0, 1, 1)
         Rectangle {
             id: topFrame
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
             height: root.frameThickness
-            color: ThemeBackend.base
-
-            Rectangle {
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 1
-                color: Qt.alpha(ThemeBackend.surface1, 0.45)
-            }
+            color: root.frameColor
+            topLeftRadius: 0
+            topRightRadius: 0
+            bottomLeftRadius: root.frameRounding
+            bottomRightRadius: root.frameRounding
         }
 
-        // 2. Left border (runs down to meet bottom bar)
+        // 2. Left border (Kiri: 0, 1, 0, 1)
         Rectangle {
             id: leftFrame
-            anchors.top: parent.top
+            anchors.top: topFrame.bottom
             anchors.bottom: parent.bottom
             anchors.bottomMargin: root.barHeight
             anchors.left: parent.left
             width: root.frameThickness
-            color: ThemeBackend.base
-
-            Rectangle {
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                anchors.right: parent.right
-                width: 1
-                color: Qt.alpha(ThemeBackend.surface1, 0.45)
-            }
+            color: root.frameColor
+            topLeftRadius: 0
+            topRightRadius: root.frameRounding
+            bottomLeftRadius: 0
+            bottomRightRadius: root.frameRounding
         }
 
-        // 3. Right border (runs down to meet bottom bar)
+        // 3. Right border (Kanan: 1, 0, 1, 0)
         Rectangle {
             id: rightFrame
-            anchors.top: parent.top
+            anchors.top: topFrame.bottom
             anchors.bottom: parent.bottom
             anchors.bottomMargin: root.barHeight
             anchors.right: parent.right
             width: root.frameThickness
-            color: ThemeBackend.base
-
-            Rectangle {
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                width: 1
-                color: Qt.alpha(ThemeBackend.surface1, 0.45)
-            }
+            color: root.frameColor
+            topLeftRadius: root.frameRounding
+            topRightRadius: 0
+            bottomLeftRadius: root.frameRounding
+            bottomRightRadius: 0
         }
 
-        // 4. Top-Left Inner Corner Fillet
-        ShaderEffect {
-            id: cornerTL
-            x: root.frameThickness
-            y: root.frameThickness
-            width: root.frameRounding
-            height: root.frameRounding
-            property vector2d itemSize: Qt.vector2d(width, height)
-            property real cornerIndex: 0.0
-            property color color: ThemeBackend.base
-            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
-        }
-
-        // 5. Top-Right Inner Corner Fillet
-        ShaderEffect {
-            id: cornerTR
-            x: parent.width - root.frameThickness - width
-            y: root.frameThickness
-            width: root.frameRounding
-            height: root.frameRounding
-            property vector2d itemSize: Qt.vector2d(width, height)
-            property real cornerIndex: 1.0
-            property color color: ThemeBackend.base
-            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
-        }
-
-        // 6. Bottom-Left Inner Corner Fillet (merges left border into bottom bar)
-        ShaderEffect {
-            id: cornerBL
-            x: root.frameThickness
-            y: parent.height - root.barHeight - height
-            width: root.frameRounding
-            height: root.frameRounding
-            property vector2d itemSize: Qt.vector2d(width, height)
-            property real cornerIndex: 2.0
-            property color color: ThemeBackend.base
-            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
-        }
-
-        // 7. Bottom-Right Inner Corner Fillet (merges right border into bottom bar)
-        ShaderEffect {
-            id: cornerBR
-            x: parent.width - root.frameThickness - width
-            y: parent.height - root.barHeight - height
-            width: root.frameRounding
-            height: root.frameRounding
-            property vector2d itemSize: Qt.vector2d(width, height)
-            property real cornerIndex: 3.0
-            property color color: ThemeBackend.base
-            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
+        // 4. Bottom border (Bawah: 1, 1, 0, 0 - active if bar is not present)
+        Rectangle {
+            id: bottomFrame
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: root.frameThickness
+            color: root.frameColor
+            visible: root.barHeight <= 0
+            topLeftRadius: root.frameRounding
+            topRightRadius: root.frameRounding
+            bottomLeftRadius: 0
+            bottomRightRadius: 0
         }
     }
 

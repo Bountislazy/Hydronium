@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Window
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -236,10 +237,7 @@ Item {
         return checkFlat(flatLeftArr) || checkFlat(flatCenterArr) || checkFlat(flatRightArr);
     }
 
-    property int groupRev: 0
-
     function backdropFor(id) {
-        void groupRev;
         if (isSolid) return solidBlur;
         if (!isModuleGrouped(id)) return null;
         for (let i = 0; i < groupBgRepeater.count; i++) {
@@ -566,10 +564,10 @@ Item {
         y: barWindow ? barWindow.baseOffsetY : 0
         color: Qt.alpha(ThemeBackend.base, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
         radius: isFill ? 0 : ThemeBackend.borderRadius
-        topLeftRadius: isFill ? (contentWrapper.barAtBottom ? contentWrapper.fillFarRadius : 0) : radius
-        topRightRadius: isFill ? (contentWrapper.barAtBottom ? contentWrapper.fillFarRadius : 0) : radius
-        bottomLeftRadius: isFill ? (contentWrapper.barAtBottom ? 0 : contentWrapper.fillFarRadius) : radius
-        bottomRightRadius: isFill ? (contentWrapper.barAtBottom ? 0 : contentWrapper.fillFarRadius) : radius
+        topLeftRadius: isFill ? (contentWrapper.barAtBottom ? (contentWrapper.fillAttachProgress > 0 ? contentWrapper.fillFarRadius : contentWrapper.cornerRadius) : 0) : radius
+        topRightRadius: isFill ? (contentWrapper.barAtBottom ? (contentWrapper.fillAttachProgress > 0 ? contentWrapper.fillFarRadius : contentWrapper.cornerRadius) : 0) : radius
+        bottomLeftRadius: isFill ? (contentWrapper.barAtBottom ? 0 : (contentWrapper.fillAttachProgress > 0 ? contentWrapper.fillFarRadius : contentWrapper.cornerRadius)) : radius
+        bottomRightRadius: isFill ? (contentWrapper.barAtBottom ? 0 : (contentWrapper.fillAttachProgress > 0 ? contentWrapper.fillFarRadius : contentWrapper.cornerRadius)) : radius
         border.width: (isSolid || isFill) ? 0 : 1
         border.color: (isSolid || isFill) ? "transparent" : Qt.alpha(ThemeBackend.surface0, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
         visible: (isSolid || isFill) && (barWindow ? !barWindow.positionChanging : true)
@@ -602,13 +600,29 @@ Item {
         }
     }
 
+    MultiEffect {
+        id: barShadow
+        source: solidBackground
+        anchors.fill: solidBackground
+        autoPaddingEnabled: true
+        shadowEnabled: true
+        shadowColor: "#000000"
+        shadowOpacity: 0.65
+        shadowBlur: 0.6
+        shadowVerticalOffset: contentWrapper.barAtBottom ? -(barWindow ? barWindow.s(4) : 4) : (barWindow ? barWindow.s(4) : 4)
+        shadowHorizontalOffset: 0
+        visible: solidBackground.visible
+        opacity: solidBackground.opacity
+        z: -2
+    }
+
     ShaderEffect {
         id: leftOuterCorner
         x: 0
         y: barWindow ? (barWindow.barPosition === "bottom" ? (barWindow.baseOffsetY - height) : (barWindow.baseOffsetY + barWindow.barHeight)) : 0
         width: contentWrapper.cornerRadius
         height: contentWrapper.cornerRadius
-        visible: !ThemeBackend.liquidGlass && contentWrapper.outerCornersReady && (barWindow ? !barWindow.positionChanging : true)
+        visible: false
         opacity: (visible && (!barWindow || barWindow.isRevealed)) ? 1.0 : 0.0
         z: 0
 
@@ -630,7 +644,7 @@ Item {
         y: barWindow ? (barWindow.barPosition === "bottom" ? (barWindow.baseOffsetY - height) : (barWindow.baseOffsetY + barWindow.barHeight)) : 0
         width: contentWrapper.cornerRadius
         height: contentWrapper.cornerRadius
-        visible: !ThemeBackend.liquidGlass && contentWrapper.outerCornersReady && (barWindow ? !barWindow.positionChanging : true)
+        visible: false
         opacity: (visible && (!barWindow || barWindow.isRevealed)) ? 1.0 : 0.0
         z: 0
 
@@ -743,8 +757,6 @@ Item {
     Repeater {
         id: groupBgRepeater
         model: contentWrapper.groupDefs
-        onItemAdded: contentWrapper.groupRev++
-        onItemRemoved: contentWrapper.groupRev++
         delegate: Rectangle {
             id: groupBgRect
             z: 0
@@ -783,7 +795,7 @@ Item {
             visible: metrics.v && (barWindow ? !barWindow.positionChanging : true) && width > 0 && (!contentWrapper.isSolid || contentWrapper.distinctPills)
             opacity: visible ? 1.0 : 0.0
 
-            color: (groupGlass.active || (ThemeBackend.liquidGlass && groupBlur.active)) ? "transparent" : ((contentWrapper.isSolid && contentWrapper.distinctPills)
+            color: groupGlass.active ? "transparent" : ((contentWrapper.isSolid && contentWrapper.distinctPills)
                 ? Qt.alpha(Qt.darker(ThemeBackend.surface0, 1.15), (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
                 : Qt.alpha(ThemeBackend.base, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0))
             radius: ThemeBackend.borderRadius
@@ -795,7 +807,7 @@ Item {
                 z: -1
                 anchors.fill: parent
                 radius: parent.radius
-                surfaceEnabled: !contentWrapper || !contentWrapper.isSolid
+                surfaceEnabled: !!contentWrapper && !contentWrapper.isSolid
                 standalone: true
             }
 
@@ -838,7 +850,7 @@ Item {
             distinctPills: contentWrapper.distinctPills
             moduleActive: contentWrapper.isModuleActive(modelData)
             isGrouped: contentWrapper.isModuleGrouped(modelData)
-            providedBackdrop: { void groupBgRepeater.count; void contentWrapper.groupRev; return contentWrapper ? contentWrapper.backdropFor(modelData) : null; }
+            providedBackdrop: { void groupBgRepeater.count; return contentWrapper ? contentWrapper.backdropFor(modelData) : null; }
             targetX: contentWrapper.getModuleX(modelData, contentWrapper.layoutState)
             suppressAnimation: contentWrapper.suppressAnimation
             layoutAnimationsEnabled: contentWrapper.layoutAnimationsEnabled
