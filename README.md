@@ -1,12 +1,13 @@
 # 💧 Hydronium Desktop Environment & Shell
 
 <p align="center">
-  <img src="screenshots/notch_dashboard.png" alt="Hydronium Dashboard Preview" width="80%" />
+  <img src="screenshots/notch_dashboard.png" alt="Hydronium Dashboard Preview" width="85%" />
 </p>
 
 <p align="center">
   <b>A personalized, fluid, and modern Wayland desktop experience.</b><br>
-  Built with <b>Quickshell</b> & <b>Serpantinum</b>, tailored for <b>Niri</b> & <b>Hyprland</b> on <b>Arch Linux</b>.
+  Built with <b>Quickshell</b>, derived from <b>Serpantinum</b> with design inspiration from <b>Caelestia</b>,<br>
+  tailored for <b>Niri</b> & <b>Hyprland</b> on <b>Arch Linux</b>.
 </p>
 
 <p align="center">
@@ -14,6 +15,16 @@
   <img src="https://img.shields.io/badge/Compositor-Niri%20%7C%20Hyprland-b4befe?style=for-the-badge&logo=wayland&logoColor=white" alt="Wayland" />
   <img src="https://img.shields.io/badge/Shell-Quickshell-cba6f7?style=for-the-badge&logo=qt&logoColor=white" alt="Quickshell" />
   <img src="https://img.shields.io/badge/Style-Catppuccin%20%2B%20Caelestia-f5c2e7?style=for-the-badge" alt="Theme" />
+  <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-AGPL--3.0-green?style=for-the-badge" alt="License" /></a>
+</p>
+
+<p align="center">
+  <a href="#-screenshots-showcase">Screenshots</a> &bull;
+  <a href="#-fitur-utama--kustomisasi">Fitur Utama</a> &bull;
+  <a href="#-cara-memulihkan--install-di-sistem-baru">Instalasi</a> &bull;
+  <a href="#️-pintasan--kontrol">Pintasan</a> &bull;
+  <a href="#-struktur-repositori">Struktur</a> &bull;
+  <a href="#-credits--acknowledgements">Credits</a>
 </p>
 
 ---
@@ -63,6 +74,7 @@
 - **Otomatis Mengenali Distro**: Berjalan mulus di Vanilla Arch Linux, CachyOS, EndeavourOS, Manjaro, dan distro turunan Arch lainnya.
 - **Resolusi Direktori XDG Dinamis**: Otomatis mendeteksi folder gambar sistem (`~/Gambar` atau `~/Pictures`) menggunakan `xdg-user-dir`.
 - **Auto-Patching Path**: Menyesuaikan path username `$HOME` dan gambar wallpaper secara otomatis saat instalasi.
+- **Pembersihan Service Bertabrakan**: Otomatis mencegah service wallpaper luar (`skwd-walld`, `hyprpaper`, dll.) agar tidak berebut layer latar belakang.
 
 ---
 
@@ -72,6 +84,7 @@
 Hydronium/
 ├── install.sh             # Script instalasi & pemulihan otomatis universal
 ├── README.md              # Dokumentasi dan panduan lengkap
+├── LICENSE.md             # Lisensi sumber terbuka (GNU AGPL v3)
 ├── .gitignore             # Daftar berkas yang diabaikan Git
 ├── screenshots/           # Folder tangkapan layar desktop Anda
 │   ├── desktop.png        # Screenshot desktop utama
@@ -114,8 +127,9 @@ Script [`install.sh`](install.sh) akan bekerja secara otomatis:
 2. Membuat cadangan konfigurasi lama jika ada.
 3. Menyalin source code shell ke `~/.local/share/serpantinum/src`.
 4. Mengadaptasi path username dan direktori gambar XDG ke sistem baru Anda.
-5. Menyalin konfigurasi ke `~/.config/` dan wallpaper ke direktori wallpaper sistem.
-6. Memuat ulang shell secara otomatis.
+5. Menonaktifkan service wallpaper yang bertabrakan jika terdeteksi.
+6. Menyalin konfigurasi ke `~/.config/` dan wallpaper ke direktori wallpaper sistem.
+7. Memuat ulang shell secara otomatis.
 
 ---
 
@@ -131,6 +145,20 @@ Script [`install.sh`](install.sh) akan bekerja secara otomatis:
 
 ---
 
+## 💖 Credits & Acknowledgements
+
+**Hydronium** adalah desktop environment personal yang berdiri di atas karya luar biasa dari komunitas open source Linux & Wayland. Ucapan terima kasih dan apresiasi sebesar-besarnya kepada:
+
+* [**ilyamiro/serpantinum**](https://github.com/ilyamiro/serpantinum) — **Proyek Induk Utama (*Upstream Base*)**. Menyediakan fondasi shell modern, arsitektur modular bar, audio & lyrics engine, panel pengaturan terintegrasi, serta manajemen daemon runtime yang handal.
+* [**Caelestia**](https://github.com/caelestia-dots) — **Inspirasi Estetika & Konsep Notch**. Menjadi inspirasi utama bagi desain *Top Drop-down Island*, layout grid widget dashboard, perpaduan warna Catppuccin + Caelestia, dan integrasi animasi Bongo Cat pada pemutar musik.
+* [**Quickshell**](https://quickshell.outfoxxed.me/) — Framework QML Wayland mutakhir karya Outfoxxed yang menjadi mesin penggerak seluruh antarmuka shell ini.
+* [**Niri**](https://github.com/YaLTeR/niri) — Compositor Wayland *scrollable-tiling* yang sangat fleksibel dan menjadi target utama lingkungan desktop ini.
+* [**Hyprland**](https://github.com/hyprwm/Hyprland) — Compositor Wayland dinamis yang didukung secara universal oleh shell ini.
+* [**Fastfetch**](https://github.com/fastfetch-cli/fastfetch) & [**Cava**](https://github.com/karlstav/cava) — Utilitas informasi sistem dan visualizer audio terminal yang menghiasi tampilan workspace.
+
+---
+
 <p align="center">
-  Dibuat dengan ❤️ untuk produktivitas dan estetika desktop modern.
+  Dibuat dengan ❤️ oleh <a href="https://github.com/Bountislazy"><b>Bountislazy</b></a> untuk produktivitas dan estetika desktop modern.<br>
+  <sub>Berdasarkan fondasi <a href="https://github.com/ilyamiro/serpantinum">Serpantinum</a> & elemen desain <a href="https://github.com/caelestia-dots">Caelestia</a> &bull; Berlisensi <a href="LICENSE.md">GNU AGPL v3</a></sub>
 </p>
