@@ -148,9 +148,10 @@ PanelWindow {
     }
 
     readonly property bool hasLiveHyprland: (typeof Hyprland !== "undefined" && Hyprland.activeToplevel && Hyprland.activeToplevel.wayland !== null && Hyprland.activeToplevel.wayland !== undefined)
-    // Caelestia architecture: only bind wayland surface when valid toplevel export exists (Hyprland)
-    // Never pass physical screen to ScreencopyView inside a layer-shell overlay window to prevent QPlatformScreen SEGV
-    readonly property var captureSourceTarget: hasLiveHyprland ? Hyprland.activeToplevel.wayland : null
+    readonly property var captureSourceTarget: {
+        if (hasLiveHyprland) return Hyprland.activeToplevel.wayland;
+        return focusCardWindow.screen || (typeof Quickshell !== "undefined" && Quickshell.screens && Quickshell.screens.length > 0 ? Quickshell.screens[0] : null);
+    }
     readonly property bool hasLivePreview: captureSourceTarget !== null
 
     // Caelestia fluid pop bounce animation curves (matching Notch spring curves)
@@ -614,8 +615,8 @@ PanelWindow {
                         ScreencopyView {
                             id: screencopyStream
                             anchors.fill: parent
-                            captureSource: focusCardWindow.captureSourceTarget
-                            live: focusCardWindow.isVisible && previewBox.visible && (focusCardWindow.captureSourceTarget !== null)
+                            captureSource: (focusCardWindow.isVisible && previewBox.visible) ? focusCardWindow.captureSourceTarget : null
+                            live: focusCardWindow.isVisible && previewBox.visible && (screencopyStream.captureSource !== null)
                             paintCursor: false
                         }
 
