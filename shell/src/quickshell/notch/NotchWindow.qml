@@ -137,21 +137,25 @@ PanelWindow {
 
     readonly property bool isMusicPlaying: (typeof MprisController !== "undefined") && MprisController.isPlaying
     // ==========================================
-    // CAELESTIA SIGNATURE ANIMATION BEZIERS
-    // Extracted from caelestia-main/hypr/hyprland/animations.lua:
-    // emphasizedDecel: points = { { 0.05, 0.7 }, { 0.1, 1 } }
-    // emphasizedAccel: points = { { 0.3, 0 }, { 0.8, 0.15 } }
+    // CAELESTIA SIGNATURE FLUID MORPH CURVES
+    // Extracted directly from Caelestia Shell (tokens.hpp / anim.cpp):
+    // 1. expressiveSpatial: [0.38, 1.14, 0.22, 1.0, 1.0, 1.0] -> fluid spring overshoot
+    // 2. emphasized: [0.05, 0.0, 0.1333, 0.06, 0.1667, 0.4, 0.2083, 0.82, 0.25, 1.0, 1.0, 1.0] -> MD3 silky decel
+    // 3. emphasizedAccel: [0.3, 0.0, 0.8, 0.15, 1.0, 1.0] -> clean closing acceleration
+    // 4. expressiveEffects: [0.34, 0.8, 0.34, 1.0, 1.0, 1.0] -> smooth fade
     // ==========================================
-    readonly property var caelestiaDecel: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
+    readonly property var caelestiaMorphExpand: [0.38, 1.14, 0.22, 1.0, 1.0, 1.0]
+    readonly property var caelestiaSmoothExpand: [0.05, 0.0, 0.133333, 0.06, 0.166667, 0.4, 0.208333, 0.82, 0.25, 1.0, 1.0, 1.0]
     readonly property var caelestiaAccel: [0.3, 0.0, 0.8, 0.15, 1.0, 1.0]
+    readonly property var caelestiaEffects: [0.34, 0.8, 0.34, 1.0, 1.0, 1.0]
 
     readonly property real targetConcaveRadius: root.expanded ? 14 : 12
-    readonly property real targetConvexRadius: root.expanded ? 22 : 16
+    readonly property real targetConvexRadius: root.expanded ? 24 : 17
     readonly property real concaveRadius: currentRTop
     readonly property real convexRadius: currentRBottom
 
-    readonly property int animDurationExpand: 500
-    readonly property int animDurationCollapse: 360
+    readonly property int animDurationExpand: 560
+    readonly property int animDurationCollapse: 380
     readonly property int animDuration: root.expanded ? animDurationExpand : animDurationCollapse
 
     readonly property real targetW: root.expandedWidth
@@ -168,7 +172,7 @@ PanelWindow {
         NumberAnimation {
             duration: root.animDuration
             easing.type: Easing.BezierSpline
-            easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
+            easing.bezierCurve: root.expanded ? root.caelestiaMorphExpand : root.caelestiaAccel
         }
     }
 
@@ -176,7 +180,7 @@ PanelWindow {
         NumberAnimation {
             duration: root.animDuration
             easing.type: Easing.BezierSpline
-            easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
+            easing.bezierCurve: root.expanded ? root.caelestiaMorphExpand : root.caelestiaAccel
         }
     }
 
@@ -184,7 +188,7 @@ PanelWindow {
         NumberAnimation {
             duration: root.animDuration
             easing.type: Easing.BezierSpline
-            easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
+            easing.bezierCurve: root.expanded ? root.caelestiaMorphExpand : root.caelestiaAccel
         }
     }
 
@@ -288,7 +292,7 @@ PanelWindow {
             NumberAnimation {
                 duration: root.animDuration
                 easing.type: Easing.BezierSpline
-                easing.bezierCurve: root.isRevealed ? root.caelestiaDecel : root.caelestiaAccel
+                easing.bezierCurve: root.isRevealed ? root.caelestiaSmoothExpand : root.caelestiaAccel
             }
         }
 
@@ -447,31 +451,22 @@ PanelWindow {
                 id: collapsedWrapper
                 anchors.fill: parent
                 opacity: root.expanded ? 0.0 : 1.0
-                y: root.expanded ? -22 : 0
-                scale: root.expanded ? 0.94 : 1.0
+                y: root.expanded ? -16 : 0
                 visible: opacity > 0
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: root.expanded ? 180 : 280
+                        duration: root.expanded ? 180 : 260
                         easing.type: Easing.BezierSpline
-                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
+                        easing.bezierCurve: root.caelestiaEffects
                     }
                 }
 
                 Behavior on y {
                     NumberAnimation {
-                        duration: root.expanded ? 240 : 340
+                        duration: root.expanded ? 220 : 340
                         easing.type: Easing.BezierSpline
-                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
-                    }
-                }
-
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: root.expanded ? 200 : 300
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
+                        easing.bezierCurve: root.expanded ? root.caelestiaAccel : root.caelestiaMorphExpand
                     }
                 }
 
@@ -487,16 +482,14 @@ PanelWindow {
                 id: expandedWrapper
                 anchors.fill: parent
                 opacity: root.expanded ? 1.0 : 0.0
-                y: root.expanded ? 0 : -55
-                scale: root.expanded ? 1.0 : 0.97
-                transformOrigin: Item.Top
+                y: root.expanded ? 0 : -36
                 visible: opacity > 0
 
                 Behavior on opacity {
                     NumberAnimation {
                         duration: root.expanded ? 320 : 180
                         easing.type: Easing.BezierSpline
-                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
+                        easing.bezierCurve: root.caelestiaEffects
                     }
                 }
 
@@ -504,15 +497,7 @@ PanelWindow {
                     NumberAnimation {
                         duration: root.animDuration
                         easing.type: Easing.BezierSpline
-                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
-                    }
-                }
-
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: root.animDuration
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: root.expanded ? root.caelestiaDecel : root.caelestiaAccel
+                        easing.bezierCurve: root.expanded ? root.caelestiaMorphExpand : root.caelestiaAccel
                     }
                 }
 

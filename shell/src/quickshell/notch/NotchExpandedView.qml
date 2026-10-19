@@ -121,7 +121,7 @@ Item {
         return mb.toFixed(1) + " M/s";
     }
 
-    implicitWidth: windowRoot ? (windowRoot.expandedWidth - (windowRoot.concaveRadius + 14) * 2) : 760
+    implicitWidth: windowRoot ? (windowRoot.expandedWidth - 56) : 764
     implicitHeight: windowRoot ? (windowRoot.expandedHeight - 24) : 376
     width: implicitWidth
     height: implicitHeight
