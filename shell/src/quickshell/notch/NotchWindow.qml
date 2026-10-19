@@ -345,6 +345,17 @@ PanelWindow {
             }
         }
 
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            blurMax: 32
+            shadowBlur: 0.8
+            shadowOpacity: 0.85
+            shadowColor: "#000000"
+            shadowHorizontalOffset: 0
+            shadowVerticalOffset: 0
+        }
+
         // 1. Top border (merges flush with notch top flares)
         Rectangle {
             id: topFrame
@@ -353,6 +364,14 @@ PanelWindow {
             anchors.right: parent.right
             height: root.frameThickness
             color: ThemeBackend.base
+
+            Rectangle {
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 1
+                color: Qt.alpha(ThemeBackend.surface1, 0.45)
+            }
         }
 
         // 2. Left border (runs down to meet bottom bar)
@@ -364,6 +383,14 @@ PanelWindow {
             anchors.left: parent.left
             width: root.frameThickness
             color: ThemeBackend.base
+
+            Rectangle {
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+                width: 1
+                color: Qt.alpha(ThemeBackend.surface1, 0.45)
+            }
         }
 
         // 3. Right border (runs down to meet bottom bar)
@@ -375,6 +402,14 @@ PanelWindow {
             anchors.right: parent.right
             width: root.frameThickness
             color: ThemeBackend.base
+
+            Rectangle {
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                width: 1
+                color: Qt.alpha(ThemeBackend.surface1, 0.45)
+            }
         }
 
         // 4. Top-Left Inner Corner Fillet
