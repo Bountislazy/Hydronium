@@ -148,10 +148,7 @@ PanelWindow {
     }
 
     readonly property bool hasLiveHyprland: (typeof Hyprland !== "undefined" && Hyprland.activeToplevel && Hyprland.activeToplevel.wayland !== null && Hyprland.activeToplevel.wayland !== undefined)
-    readonly property var captureSourceTarget: {
-        if (hasLiveHyprland) return Hyprland.activeToplevel.wayland;
-        return focusCardWindow.screen || (typeof Quickshell !== "undefined" && Quickshell.screens && Quickshell.screens.length > 0 ? Quickshell.screens[0] : null);
-    }
+    readonly property var captureSourceTarget: hasLiveHyprland ? Hyprland.activeToplevel.wayland : null
     readonly property bool hasLivePreview: captureSourceTarget !== null
 
     // Caelestia fluid pop bounce animation curves (matching Notch spring curves)
