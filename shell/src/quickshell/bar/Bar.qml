@@ -197,14 +197,14 @@ Variants {
                 return (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.width !== undefined) ? Config.rawSettings.bar.width : 100;
             }
             property real edgePadding: (autohide && !isFill) ? s(4) : 0
-            property real effectiveBarWidth: Math.round(isVertical ? barWindowRoot.width : ((barWindowRoot.width - (autohide ? edgePadding * 2 : 0)) * (barWidthPercent / 100.0)))
-            property real horizontalOffset: Math.round(isVertical ? 0 : ((barWindowRoot.width - effectiveBarWidth) / 2))
+            property real effectiveBarWidth: Math.round(isVertical ? barWindowRoot.width : (isFill ? barWindowRoot.width : ((barWindowRoot.width - (autohide ? edgePadding * 2 : 0)) * (barWidthPercent / 100.0))))
+            property real horizontalOffset: Math.round((isVertical || isFill) ? 0 : ((barWindowRoot.width - effectiveBarWidth) / 2))
 
-            property real effectiveBarHeight: Math.round(!isVertical ? barWindowRoot.height : ((barWindowRoot.height - (autohide ? edgePadding * 2 : 0)) * (barWidthPercent / 100.0)))
-            property real verticalOffset: Math.round(!isVertical ? 0 : ((barWindowRoot.height - effectiveBarHeight) / 2))
+            property real effectiveBarHeight: Math.round(!isVertical ? barWindowRoot.height : (isFill ? barWindowRoot.height : ((barWindowRoot.height - (autohide ? edgePadding * 2 : 0)) * (barWidthPercent / 100.0))))
+            property real verticalOffset: Math.round((!isVertical || isFill) ? 0 : ((barWindowRoot.height - effectiveBarHeight) / 2))
 
-            property real currentBarMinX: (contentWrapper && contentWrapper.dynamicMaxX > contentWrapper.dynamicMinX) ? contentWrapper.dynamicMinX : horizontalOffset
-            property real currentBarMaxX: (contentWrapper && contentWrapper.dynamicMaxX > contentWrapper.dynamicMinX) ? contentWrapper.dynamicMaxX : (horizontalOffset + effectiveBarWidth)
+            property real currentBarMinX: (contentWrapper && contentWrapper.dynamicMaxX > contentWrapper.dynamicMinX) ? contentWrapper.dynamicMinX : (isFill ? 0 : horizontalOffset)
+            property real currentBarMaxX: (contentWrapper && contentWrapper.dynamicMaxX > contentWrapper.dynamicMinX) ? contentWrapper.dynamicMaxX : (isFill ? barWindowRoot.width : (horizontalOffset + effectiveBarWidth))
 
             property real currentBarMinY: (verticalWrapper && verticalWrapper.dynamicMaxY > verticalWrapper.dynamicMinY) ? verticalWrapper.dynamicMinY : verticalOffset
             property real currentBarMaxY: (verticalWrapper && verticalWrapper.dynamicMaxY > verticalWrapper.dynamicMinY) ? verticalWrapper.dynamicMaxY : (verticalOffset + effectiveBarHeight)
@@ -283,10 +283,10 @@ Variants {
 
             mask: Region {
                 Region {
-                    x: barWindowRoot.isVertical ? (barWindowRoot.barPosition === "right" ? (barWindowRoot.width - barWindowRoot.activeMaskWidth) : 0) : barWindowRoot.currentBarMinX
-                    y: barWindowRoot.isVertical ? barWindowRoot.currentBarMinY : (barWindowRoot.barPosition === "bottom" ? barWindowRoot.baseOffsetY : 0)
-                    width: barWindowRoot.isVertical ? barWindowRoot.activeMaskWidth : (barWindowRoot.currentBarMaxX - barWindowRoot.currentBarMinX)
-                    height: barWindowRoot.isVertical ? (barWindowRoot.currentBarMaxY - barWindowRoot.currentBarMinY) : (isFill ? barWindowRoot.barHeight : barWindowRoot.activeMaskHeight)
+                    x: barWindowRoot.isVertical ? (barWindowRoot.barPosition === "right" ? (barWindowRoot.width - barWindowRoot.activeMaskWidth) : 0) : (barWindowRoot.isFill ? 0 : barWindowRoot.currentBarMinX)
+                    y: barWindowRoot.isVertical ? (barWindowRoot.isFill ? 0 : barWindowRoot.currentBarMinY) : (barWindowRoot.barPosition === "bottom" ? barWindowRoot.baseOffsetY : 0)
+                    width: barWindowRoot.isVertical ? barWindowRoot.activeMaskWidth : (barWindowRoot.isFill ? barWindowRoot.width : (barWindowRoot.currentBarMaxX - barWindowRoot.currentBarMinX))
+                    height: barWindowRoot.isVertical ? (barWindowRoot.currentBarMaxY - barWindowRoot.currentBarMinY) : (barWindowRoot.isFill ? barWindowRoot.barHeight : barWindowRoot.activeMaskHeight)
                 }
                 Region {
                     x: barWindowRoot.isVertical ? (barWindowRoot.barPosition === "right" ? (barWindowRoot.width - barWindowRoot.barHeight - barWindowRoot.cornerRadius) : barWindowRoot.barHeight) : 0

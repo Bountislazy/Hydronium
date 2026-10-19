@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Window
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -226,10 +227,7 @@ Item {
         return checkFlat(flatTopArr) || checkFlat(flatCenterArr) || checkFlat(flatBottomArr);
     }
 
-    property int groupRev: 0
-
     function backdropFor(id) {
-        void groupRev;
         if (isSolid) return solidBlur;
         if (!isModuleGrouped(id)) return null;
         for (let i = 0; i < groupBgRepeater.count; i++) {
@@ -333,7 +331,7 @@ Item {
     property real distinctEdgePadding: (isSolid && distinctPills) ? (barWindow ? barWindow.s(4) : 4) : 4
     property real fillInset: distinctEdgePadding
 
-    property bool centerByEdges: !!barWindow && barWindow.centerByEdges === true
+    property bool centerByEdges: !isFill && !!barWindow && barWindow.centerByEdges === true
     property real borderInset: (!isFill && barWindow) ? barWindow.s(1) : 0
     property real edgeInset: borderInset + distinctEdgePadding
     property real packedSpan: tHeightTarget + tcGap + cHeightTarget + cbGap + bHeightTarget + edgeInset * 2
@@ -376,6 +374,7 @@ Item {
     property real bFinalClampedY: Math.max(0, Math.min(contentWrapper.height - bHeightTarget, bFinalY))
 
     property real dynamicMinY: {
+        if (isFill) return 0;
         let m = contentWrapper.height;
         let hasModules = (tHeightTarget > 0 || cHeightTarget > 0 || bHeightTarget > 0);
         if (tHeightTarget > 0) m = Math.min(m, tFinalY - borderInset - distinctEdgePadding);
@@ -388,6 +387,7 @@ Item {
     }
 
     property real dynamicMaxY: {
+        if (isFill) return contentWrapper.height;
         let m = 0;
         let hasModules = (tHeightTarget > 0 || cHeightTarget > 0 || bHeightTarget > 0);
         if (tHeightTarget > 0) m = Math.max(m, tFinalY + tHeightTarget + borderInset + distinctEdgePadding);
@@ -514,9 +514,9 @@ Item {
     Rectangle {
         id: solidBackground
         x: barWindow && barWindow.barPosition === "right" ? (parent.width - width) : 0
-        y: Math.round(contentWrapper.dynamicMinY)
+        y: isFill ? 0 : Math.round(contentWrapper.dynamicMinY)
         width: barWindow ? barWindow.barHeight : 40
-        height: Math.round(contentWrapper.dynamicMaxY) - Math.round(contentWrapper.dynamicMinY)
+        height: isFill ? contentWrapper.height : (Math.round(contentWrapper.dynamicMaxY) - Math.round(contentWrapper.dynamicMinY))
         color: Qt.alpha(ThemeBackend.base, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
         radius: isFill ? 0 : ThemeBackend.borderRadius
         topLeftRadius: isFill ? (contentWrapper.barAtRight ? contentWrapper.fillFarRadius : 0) : radius
@@ -553,6 +553,22 @@ Item {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
             NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
         }
+    }
+
+    MultiEffect {
+        id: barShadow
+        source: solidBackground
+        anchors.fill: solidBackground
+        autoPaddingEnabled: true
+        shadowEnabled: true
+        shadowColor: "#000000"
+        shadowOpacity: 0.65
+        shadowBlur: 0.6
+        shadowHorizontalOffset: contentWrapper.barAtRight ? -(barWindow ? barWindow.s(4) : 4) : (barWindow ? barWindow.s(4) : 4)
+        shadowVerticalOffset: 0
+        visible: solidBackground.visible
+        opacity: solidBackground.opacity
+        z: -2
     }
 
     ShaderEffect {
@@ -696,8 +712,6 @@ Item {
     Repeater {
         id: groupBgRepeater
         model: contentWrapper.groupDefs
-        onItemAdded: contentWrapper.groupRev++
-        onItemRemoved: contentWrapper.groupRev++
         delegate: Rectangle {
             id: groupBgRect
             z: 0
@@ -746,7 +760,7 @@ Item {
             visible: metrics.v && (barWindow ? !barWindow.positionChanging : true) && height > 0 && (!contentWrapper.isSolid || contentWrapper.distinctPills)
             opacity: visible ? 1.0 : 0.0
 
-            color: (groupGlass.active || (ThemeBackend.liquidGlass && groupBlur.active)) ? "transparent" : ((contentWrapper.isSolid && contentWrapper.distinctPills)
+            color: groupGlass.active ? "transparent" : ((contentWrapper.isSolid && contentWrapper.distinctPills)
                 ? Qt.alpha(Qt.darker(ThemeBackend.surface0, 1.15), (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
                 : Qt.alpha(ThemeBackend.base, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0))
             radius: ThemeBackend.borderRadius
@@ -758,7 +772,7 @@ Item {
                 z: -1
                 anchors.fill: parent
                 radius: parent.radius
-                surfaceEnabled: !contentWrapper || !contentWrapper.isSolid
+                surfaceEnabled: !!contentWrapper && !contentWrapper.isSolid
                 standalone: true
             }
 
@@ -807,7 +821,7 @@ Item {
             distinctPills: contentWrapper.distinctPills
             moduleActive: contentWrapper.isModuleActive(modelData)
             isGrouped: contentWrapper.isModuleGrouped(modelData)
-            providedBackdrop: { void groupBgRepeater.count; void contentWrapper.groupRev; return contentWrapper ? contentWrapper.backdropFor(modelData) : null; }
+            providedBackdrop: { void groupBgRepeater.count; return contentWrapper ? contentWrapper.backdropFor(modelData) : null; }
             targetY: contentWrapper.getModuleY(modelData, contentWrapper.layoutState)
             targetX: contentWrapper.getModuleX(barMod)
             suppressAnimation: contentWrapper.suppressAnimation

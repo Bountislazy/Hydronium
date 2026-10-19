@@ -341,7 +341,7 @@ Item {
     property real distinctEdgePadding: (isSolid && distinctPills) ? (barWindow ? barWindow.s(4) : 4) : 4
     property real fillInset: distinctEdgePadding
 
-    property bool centerByEdges: !!barWindow && barWindow.centerByEdges === true && layoutState === "default"
+    property bool centerByEdges: !isFill && !!barWindow && barWindow.centerByEdges === true && layoutState === "default"
     property real borderInset: (!isFill && barWindow) ? barWindow.s(1) : 0
     property real edgeInset: borderInset + distinctEdgePadding
     property real packedSpan: lWidthTarget + lcGap + cWidthTarget + crGap + rWidthTarget + edgeInset * 2
@@ -411,6 +411,7 @@ Item {
     property real rFinalClampedX: Math.max(screenMinLeft, Math.min(screenMaxRight - rWidthTarget, rFinalX))
 
     property real dynamicMinX: {
+        if (isFill) return 0;
         let m = contentWrapper.width;
         let hasModules = (lWidthTarget > 0 || cWidthTarget > 0 || rWidthTarget > 0);
         if (lWidthTarget > 0) m = Math.min(m, lFinalX - borderInset - distinctEdgePadding);
@@ -423,6 +424,7 @@ Item {
     }
 
     property real dynamicMaxX: {
+        if (isFill) return contentWrapper.width;
         let m = 0;
         let hasModules = (lWidthTarget > 0 || cWidthTarget > 0 || rWidthTarget > 0);
         if (lWidthTarget > 0) m = Math.max(m, lFinalX + lWidthTarget + borderInset + distinctEdgePadding);
@@ -558,8 +560,8 @@ Item {
 
     Rectangle {
         id: solidBackground
-        x: Math.round(contentWrapper.dynamicMinX)
-        width: Math.round(contentWrapper.dynamicMaxX) - Math.round(contentWrapper.dynamicMinX)
+        x: isFill ? 0 : Math.round(contentWrapper.dynamicMinX)
+        width: isFill ? contentWrapper.width : (Math.round(contentWrapper.dynamicMaxX) - Math.round(contentWrapper.dynamicMinX))
         height: barWindow ? barWindow.barHeight : 0
         y: barWindow ? barWindow.baseOffsetY : 0
         color: Qt.alpha(ThemeBackend.base, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
