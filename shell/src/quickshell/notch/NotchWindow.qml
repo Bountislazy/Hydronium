@@ -12,7 +12,7 @@ PanelWindow {
     screen: root.screen
 
     WlrLayershell.namespace: "notch"
-    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.layer: WlrLayer.Top
     exclusionMode: ExclusionMode.Ignore
     exclusiveZone: 0
     color: "transparent"

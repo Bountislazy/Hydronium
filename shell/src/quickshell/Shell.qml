@@ -44,6 +44,10 @@ ShellRoot {
     }
 
     Main {}
+    Loader {
+        active: notchEnabled
+        sourceComponent: Notch {}
+    }
     Bar {}
     Lock {}
     WidgetRedactor {}
@@ -78,10 +82,6 @@ ShellRoot {
     Loader {
         active: !performanceMode && quickactionsEnabled
         sourceComponent: Floating {}
-    }
-    Loader {
-        active: notchEnabled
-        sourceComponent: Notch {}
     }
 
     Component.onCompleted: {
