@@ -210,6 +210,11 @@ if [ "$COMMAND" == "start" ]; then
         fi
     fi
 
+    pkill -KILL -f "focus_daemon.py" 2>/dev/null
+    if [ -n "$MAIN_QML" ]; then
+        pkill -KILL -f "quickshell.*$MAIN_QML" 2>/dev/null
+    fi
+
     echo $$ > "/tmp/serpantinumd.pid"
 
     CLEANUP_DONE=false
