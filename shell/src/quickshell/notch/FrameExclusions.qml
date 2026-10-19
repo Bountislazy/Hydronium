@@ -21,6 +21,13 @@ Variants {
                 }
                 return 10;
             }
+            property real windowGap: {
+                if (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.notch && Config.rawSettings.notch.windowGap !== undefined) {
+                    return Number(Config.rawSettings.notch.windowGap);
+                }
+                return 8;
+            }
+            readonly property real totalExclusion: (exclScope.frameEnabled && !exclScope.hasFullscreen) ? (exclScope.frameThickness + exclScope.windowGap) : 0
             property var activeToplevel: ToplevelManager.activeToplevel
             property bool hasFullscreen: {
                 if (!activeToplevel || !activeToplevel.fullscreen) return false;
@@ -39,10 +46,10 @@ Variants {
                 anchors.left: true
                 anchors.right: true
                 exclusionMode: ExclusionMode.Normal
-                exclusiveZone: (exclScope.frameEnabled && !exclScope.hasFullscreen) ? exclScope.frameThickness : 0
+                exclusiveZone: exclScope.totalExclusion
                 mask: Region {}
                 color: "transparent"
-                implicitHeight: (exclScope.frameEnabled && !exclScope.hasFullscreen) ? exclScope.frameThickness : 0
+                implicitHeight: exclScope.totalExclusion
             }
 
             PanelWindow {
@@ -54,10 +61,10 @@ Variants {
                 anchors.top: true
                 anchors.bottom: true
                 exclusionMode: ExclusionMode.Normal
-                exclusiveZone: (exclScope.frameEnabled && !exclScope.hasFullscreen) ? exclScope.frameThickness : 0
+                exclusiveZone: exclScope.totalExclusion
                 mask: Region {}
                 color: "transparent"
-                implicitWidth: (exclScope.frameEnabled && !exclScope.hasFullscreen) ? exclScope.frameThickness : 0
+                implicitWidth: exclScope.totalExclusion
             }
 
             PanelWindow {
@@ -69,10 +76,10 @@ Variants {
                 anchors.top: true
                 anchors.bottom: true
                 exclusionMode: ExclusionMode.Normal
-                exclusiveZone: (exclScope.frameEnabled && !exclScope.hasFullscreen) ? exclScope.frameThickness : 0
+                exclusiveZone: exclScope.totalExclusion
                 mask: Region {}
                 color: "transparent"
-                implicitWidth: (exclScope.frameEnabled && !exclScope.hasFullscreen) ? exclScope.frameThickness : 0
+                implicitWidth: exclScope.totalExclusion
             }
         }
     }

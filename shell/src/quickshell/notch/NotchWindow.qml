@@ -376,9 +376,9 @@ PanelWindow {
         preferredRendererType: Shape.GeometryRenderer
         layer.effect: MultiEffect {
             shadowEnabled: true
-            blurMax: 32
-            shadowBlur: 0.8
-            shadowOpacity: 0.85
+            blurMax: 24
+            shadowBlur: 0.65
+            shadowOpacity: 0.70
             shadowColor: "#000000"
             shadowHorizontalOffset: 0
             shadowVerticalOffset: 0
