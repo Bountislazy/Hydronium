@@ -8,7 +8,7 @@ Item {
     signal cardTriggered()
 
     property bool isVisible: false
-    property var screen: null
+    property var screen: (typeof Quickshell !== "undefined" && Quickshell.screens && Quickshell.screens.length > 0) ? Quickshell.screens[0] : null
     property real targetX: 0
     property real targetY: 0
     property bool alignRight: false
