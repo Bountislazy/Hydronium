@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Shapes
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
@@ -319,21 +320,48 @@ Item {
                         anchors.margins: 14
                         spacing: 14
 
-                        // User Avatar Image
-                        Rectangle {
+                        // User Avatar Image (Circular)
+                        Item {
                             width: 58
                             height: 58
-                            radius: 29
-                            color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.surface1 : "#45475a"
-                            border.width: 2
-                            border.color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.mauve : "#cba6f7"
-                            clip: true
+
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: width / 2
+                                color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.surface1 : "#45475a"
+                            }
+
+                            Rectangle {
+                                id: avatarMask
+                                anchors.fill: parent
+                                radius: width / 2
+                                visible: false
+                                layer.enabled: true
+                            }
 
                             Image {
+                                id: avatarImg
                                 anchors.fill: parent
                                 fillMode: Image.PreserveAspectCrop
                                 asynchronous: true
                                 source: expandedRoot.avatarPath ? ("file://" + expandedRoot.avatarPath) : ""
+                                visible: false
+                            }
+
+                            MultiEffect {
+                                anchors.fill: parent
+                                source: avatarImg
+                                maskEnabled: true
+                                maskSource: avatarMask
+                                visible: avatarImg.status === Image.Ready && avatarImg.source !== ""
+                            }
+
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: width / 2
+                                color: "transparent"
+                                border.width: 2
+                                border.color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.mauve : "#cba6f7"
                             }
                         }
 
@@ -754,14 +782,25 @@ Item {
                                 }
                             }
 
-                            // Circular Vinyl Disc
-                            Rectangle {
+                            // Circular Vinyl Disc & Thumbnail
+                            Item {
                                 anchors.centerIn: parent
                                 width: 66
                                 height: 66
-                                radius: 33
-                                color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.crust : "#11111b"
-                                clip: true
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    radius: width / 2
+                                    color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.crust : "#11111b"
+                                }
+
+                                Rectangle {
+                                    id: discMask
+                                    anchors.fill: parent
+                                    radius: width / 2
+                                    visible: false
+                                    layer.enabled: true
+                                }
 
                                 Image {
                                     id: discImg
@@ -771,6 +810,15 @@ Item {
                                     source: (typeof MprisController !== "undefined" && MprisController.artUrl)
                                         ? MprisController.artUrl
                                         : ""
+                                    visible: false
+                                }
+
+                                MultiEffect {
+                                    anchors.fill: parent
+                                    source: discImg
+                                    maskEnabled: true
+                                    maskSource: discMask
+                                    visible: discImg.status === Image.Ready && discImg.source !== ""
                                 }
 
                                 Text {
@@ -780,6 +828,27 @@ Item {
                                     font.family: (typeof ThemeBackend !== "undefined") ? ThemeBackend.iconFont : Qt.application.font.family
                                     font.pixelSize: 22
                                     color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.mauve : "#cba6f7"
+                                }
+
+                                // Center vinyl spindle hole
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: 14
+                                    height: 14
+                                    radius: 7
+                                    color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.crust : "#11111b"
+                                    border.width: 1.5
+                                    border.color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.mauve : "#cba6f7"
+                                    visible: discImg.status === Image.Ready && discImg.source !== ""
+                                }
+
+                                // Circular outer border ring
+                                Rectangle {
+                                    anchors.fill: parent
+                                    radius: width / 2
+                                    color: "transparent"
+                                    border.width: 1.5
+                                    border.color: (typeof ThemeBackend !== "undefined") ? Qt.alpha(ThemeBackend.surface1, 0.5) : "#45475a"
                                 }
                             }
                         }
@@ -929,37 +998,109 @@ Item {
                     NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
                 }
 
-                // Left: Album Art Card
-                Rectangle {
+                // Left: Circular Album Art & Vinyl Disc
+                Item {
                     Layout.preferredWidth: 220
                     Layout.fillHeight: true
-                    radius: 16
-                    color: (typeof ThemeBackend !== "undefined") ? Qt.alpha(ThemeBackend.surface0, 0.45) : "#313244"
-                    border.width: 1
-                    border.color: (typeof ThemeBackend !== "undefined") ? Qt.alpha(ThemeBackend.surface1, 0.35) : "#45475a"
-                    clip: true
 
-                    Image {
-                        anchors.fill: parent
-                        fillMode: Image.PreserveAspectCrop
-                        asynchronous: true
-                        source: (typeof MprisController !== "undefined" && MprisController.artUrl)
-                            ? MprisController.artUrl
-                            : ""
-                    }
-
-                    Rectangle {
-                        anchors.fill: parent
-                        color: Qt.alpha(ThemeBackend.base, 0.35)
-                    }
-
-                    Text {
+                    // Circular Disc Container centered in left column
+                    Item {
                         anchors.centerIn: parent
-                        text: "󰝚"
-                        font.family: ThemeBackend.iconFont
-                        font.pixelSize: 48
-                        color: ThemeBackend.mauve
-                        visible: !MprisController.artUrl
+                        width: Math.min(parent.width - 12, parent.height - 12, 210)
+                        height: width
+
+                        // Disc Background Base
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: width / 2
+                            color: (typeof ThemeBackend !== "undefined") ? Qt.alpha(ThemeBackend.surface0, 0.6) : "#1e1e2e"
+                        }
+
+                        // Circular Mask
+                        Rectangle {
+                            id: fullMediaArtMask
+                            anchors.fill: parent
+                            radius: width / 2
+                            visible: false
+                            layer.enabled: true
+                        }
+
+                        // Album Art Image
+                        Image {
+                            id: fullMediaArtImg
+                            anchors.fill: parent
+                            fillMode: Image.PreserveAspectCrop
+                            asynchronous: true
+                            source: (typeof MprisController !== "undefined" && MprisController.artUrl)
+                                ? (MprisController.artUrl.startsWith("file://") || MprisController.artUrl.startsWith("http")
+                                    ? MprisController.artUrl
+                                    : "file://" + MprisController.artUrl)
+                                : ""
+                            visible: false
+                        }
+
+                        // Circular Masked Image
+                        MultiEffect {
+                            anchors.fill: parent
+                            source: fullMediaArtImg
+                            maskEnabled: true
+                            maskSource: fullMediaArtMask
+                            visible: fullMediaArtImg.status === Image.Ready && fullMediaArtImg.source !== ""
+                        }
+
+                        // Concentric Vinyl Grooves
+                        Repeater {
+                            model: [0.88, 0.74, 0.60]
+                            delegate: Rectangle {
+                                anchors.centerIn: parent
+                                width: parent.width * modelData
+                                height: width
+                                radius: width / 2
+                                color: "transparent"
+                                border.color: Qt.alpha("#ffffff", 0.08)
+                                border.width: 1
+                                visible: fullMediaArtImg.status === Image.Ready && fullMediaArtImg.source !== ""
+                            }
+                        }
+
+                        // Fallback icon if no art
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰝚"
+                            font.family: (typeof ThemeBackend !== "undefined") ? ThemeBackend.iconFont : Qt.application.font.family
+                            font.pixelSize: 52
+                            color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.mauve : "#cba6f7"
+                            visible: fullMediaArtImg.status !== Image.Ready || fullMediaArtImg.source === ""
+                        }
+
+                        // Center Vinyl Spindle Hole
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 34
+                            height: 34
+                            radius: 17
+                            color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.crust : "#11111b"
+                            border.width: 2
+                            border.color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.mauve : "#cba6f7"
+                            visible: fullMediaArtImg.status === Image.Ready && fullMediaArtImg.source !== ""
+
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: 8
+                                height: 8
+                                radius: 4
+                                color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.surface0 : "#313244"
+                            }
+                        }
+
+                        // Circular Outer Border Ring
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: width / 2
+                            color: "transparent"
+                            border.width: 2.5
+                            border.color: (typeof ThemeBackend !== "undefined") ? ThemeBackend.mauve : "#cba6f7"
+                        }
                     }
                 }
 
