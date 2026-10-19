@@ -23,6 +23,20 @@ Rectangle {
     property real ui2: 0
     property string errorMessage: ""
 
+    function currentSessionName() {
+        if (sessionHelper.currentItem && sessionHelper.currentItem.sName && sessionHelper.currentItem.sName !== "") {
+            return sessionHelper.currentItem.sName;
+        }
+        if (typeof sessionModel !== "undefined" && sessionModel) {
+            try {
+                let idx = sessionModel.index(root.sessionIndex, 0);
+                let n = sessionModel.data(idx, 257) || sessionModel.data(idx, 0);
+                if (n) return String(n);
+            } catch(e) {}
+        }
+        return "NIRI";
+    }
+
     FontLoader {
         id: customFont
         source: "font/GoogleSans-VariableFont_GRAD,opsz,wght.ttf"
@@ -315,22 +329,44 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 2 * s
                             
-                            Text {
-                                text: "SESSION"
-                                font.family: root.sansFont
-                                font.pixelSize: 12 * s
-                                font.bold: true
-                                color: sessionMouse.containsMouse ? "#BEE8C7" : "#0F3C2C"
-                                Behavior on color { ColorAnimation { duration: 150 } }
+                            Row {
+                                spacing: 4 * s
+                                Text {
+                                    text: "SESSION"
+                                    font.family: root.sansFont
+                                    font.pixelSize: 12 * s
+                                    font.bold: true
+                                    color: sessionMouse.containsMouse ? "#BEE8C7" : "#0F3C2C"
+                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                }
+                                Text {
+                                    visible: typeof sessionModel !== "undefined" && sessionModel.rowCount() > 1
+                                    text: "(" + (root.sessionIndex + 1) + "/" + sessionModel.rowCount() + ")"
+                                    font.family: root.sansFont
+                                    font.pixelSize: 8 * s
+                                    color: sessionMouse.containsMouse ? "#BEE8C7" : "#5a7a6a"
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
                             }
-                            Text {
-                                text: ((sessionHelper.currentItem && sessionHelper.currentItem.sName) ? sessionHelper.currentItem.sName : "PLASMA").toUpperCase()
-                                font.family: root.sansFont
-                                font.pixelSize: 9 * s
-                                color: sessionMouse.containsMouse ? "#E9F3EB" : "#1E4F3E"
-                                Behavior on color { ColorAnimation { duration: 150 } }
-                                elide: Text.ElideRight
-                                width: 90 * s
+                            Row {
+                                spacing: 3 * s
+                                Text {
+                                    text: root.currentSessionName().toUpperCase()
+                                    font.family: root.sansFont
+                                    font.pixelSize: 9 * s
+                                    color: sessionMouse.containsMouse ? "#E9F3EB" : "#1E4F3E"
+                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                    elide: Text.ElideRight
+                                    width: 80 * s
+                                }
+                                Text {
+                                    text: "⇄"
+                                    font.family: root.sansFont
+                                    font.pixelSize: 9 * s
+                                    font.bold: true
+                                    color: sessionMouse.containsMouse ? "#E9F3EB" : "#1E4F3E"
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
                             }
                         }
                     }
