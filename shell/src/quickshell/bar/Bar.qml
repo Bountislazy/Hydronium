@@ -31,7 +31,8 @@ Scope {
         if (typeof Config === "undefined" || !Config.rawSettings || !Config.rawSettings.notch) return true;
         let notchEnabled = Config.rawSettings.notch.enabled !== undefined ? Boolean(Config.rawSettings.notch.enabled) : true;
         let frameEnabled = Config.rawSettings.notch.frameEnabled !== undefined ? Boolean(Config.rawSettings.notch.frameEnabled) : true;
-        return notchEnabled && frameEnabled;
+        let barPos = (Config.rawSettings.bar && Config.rawSettings.bar.position) ? Config.rawSettings.bar.position : "bottom";
+        return notchEnabled && frameEnabled && (barPos === "bottom");
     }
 
     Variants {

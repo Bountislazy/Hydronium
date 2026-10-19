@@ -12,7 +12,29 @@ PanelWindow {
     required property var screen
     screen: root.screen
 
-    readonly property bool isUnified: true
+    property int configRevision: 0
+
+    Connections {
+        target: (typeof Config !== "undefined") ? Config : null
+        function onSettingsLoaded() { root.configRevision++; }
+        function onDataReadyChanged() { root.configRevision++; }
+        function onRawSettingsChanged() { root.configRevision++; }
+    }
+
+    Component.onCompleted: {
+        if (typeof Config !== "undefined" && Config.dataReady) {
+            root.configRevision++;
+        }
+    }
+
+    readonly property bool isUnified: {
+        let dummy = configRevision;
+        if (typeof Config === "undefined" || !Config.rawSettings || !Config.rawSettings.notch) return true;
+        let notchEnabled = Config.rawSettings.notch.enabled !== undefined ? Boolean(Config.rawSettings.notch.enabled) : true;
+        let frameEnabled = Config.rawSettings.notch.frameEnabled !== undefined ? Boolean(Config.rawSettings.notch.frameEnabled) : true;
+        let barPos = (Config.rawSettings.bar && Config.rawSettings.bar.position) ? Config.rawSettings.bar.position : "bottom";
+        return notchEnabled && frameEnabled && (barPos === "bottom");
+    }
 
     WlrLayershell.namespace: "notch"
     WlrLayershell.layer: WlrLayer.Top
@@ -65,26 +87,26 @@ PanelWindow {
             width: (root.frameEnabled && !root.hasFullscreen && !root.hasBottomBar) ? root.width : 0
             height: (root.frameEnabled && !root.hasFullscreen && !root.hasBottomBar) ? root.frameThickness : 0
         }
-        // Bottom bar interactive region (always covers the full bar when bottom bar is active)
+        // Bottom bar interactive region (always covers the full bar when unified bottom bar is active)
         Region {
             x: 0
-            y: root.height - Math.max(root.effectiveBarHeight, root.barHeight)
-            width: (root.hasBottomBar && !root.hasFullscreen) ? root.width : 0
-            height: (root.hasBottomBar && !root.hasFullscreen) ? Math.max(root.effectiveBarHeight, root.barHeight) : 0
+            y: root.height - Math.max(root.effectiveBarHeight, (barContent && barContent.autohide) ? 4 : root.barHeight)
+            width: (root.isUnified && root.hasBottomBar && !root.hasFullscreen) ? root.width : 0
+            height: (root.isUnified && root.hasBottomBar && !root.hasFullscreen) ? Math.max(root.effectiveBarHeight, (barContent && barContent.autohide) ? 4 : root.barHeight) : 0
         }
         // Left scoop fillet interactive region
         Region {
             x: 0
             y: Math.max(0, root.height - root.effectiveBarHeight - root.frameRounding)
-            width: (root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? (root.frameThickness + root.frameRounding) : 0
-            height: (root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? root.frameRounding : 0
+            width: (root.isUnified && root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? (root.frameThickness + root.frameRounding) : 0
+            height: (root.isUnified && root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? root.frameRounding : 0
         }
         // Right scoop fillet interactive region
         Region {
             x: root.width - (root.frameThickness + root.frameRounding)
             y: Math.max(0, root.height - root.effectiveBarHeight - root.frameRounding)
-            width: (root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? (root.frameThickness + root.frameRounding) : 0
-            height: (root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? root.frameRounding : 0
+            width: (root.isUnified && root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? (root.frameThickness + root.frameRounding) : 0
+            height: (root.isUnified && root.hasBottomBar && !root.hasFullscreen && root.effectiveBarHeight > 0) ? root.frameRounding : 0
         }
     }
 
@@ -204,7 +226,12 @@ PanelWindow {
     readonly property real effectiveBarHeight: hasBottomBar ? Math.max(0, barHeight - animatedBarOffset) : 0
     readonly property bool hasFullscreen: {
         if (typeof ToplevelManager !== "undefined" && ToplevelManager.activeToplevel) {
-            return Boolean(ToplevelManager.activeToplevel.fullscreen);
+            let active = ToplevelManager.activeToplevel;
+            if (!active.fullscreen) return false;
+            if (active.screens && active.screens.length > 0) {
+                return active.screens.indexOf(root.screen) !== -1;
+            }
+            return true;
         }
         return false;
     }
@@ -658,7 +685,7 @@ PanelWindow {
         screen: root.screen
         anchors.fill: parent
         z: 3
-        visible: !root.hasFullscreen
+        visible: root.isUnified && !root.hasFullscreen
     }
 
     Binding {

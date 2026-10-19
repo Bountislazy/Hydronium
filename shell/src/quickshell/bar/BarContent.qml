@@ -134,7 +134,6 @@ Item {
     Connections {
         target: barHover
         function onHoveredChanged() {
-            console.log("[BAR HOVER EVENT] hovered=" + barHover.hovered);
             barRoot.checkHideTimer();
         }
     }
