@@ -49,6 +49,10 @@ ShellRoot {
         sourceComponent: Notch {}
     }
     Bar {}
+    Loader {
+        active: notchEnabled
+        sourceComponent: FrameExclusions {}
+    }
     Lock {}
     WidgetRedactor {}
 

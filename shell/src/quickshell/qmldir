@@ -11,6 +11,7 @@ WallpaperEngine 1.0 wallpaper/WallpaperEngine.qml
 Idle 1.0 idle/Idle.qml
 Lock 1.0 lock/Lock.qml
 Notch 1.0 notch/Notch.qml
+FrameExclusions 1.0 notch/FrameExclusions.qml
 NotchWindow 1.0 notch/NotchWindow.qml
 NotchCollapsedView 1.0 notch/NotchCollapsedView.qml
 NotchExpandedView 1.0 notch/NotchExpandedView.qml

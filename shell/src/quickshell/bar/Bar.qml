@@ -15,6 +15,7 @@ Variants {
         PanelWindow {
             id: barWindowRoot
             visible: barConfigReady
+            exclusionMode: ExclusionMode.Ignore
 
             property bool pendingReload: false
             property bool startupFilesReady: false
