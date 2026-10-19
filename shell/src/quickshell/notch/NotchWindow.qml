@@ -22,11 +22,10 @@ PanelWindow {
 
     anchors {
         top: true
+        bottom: true
         left: true
         right: true
     }
-
-    implicitHeight: Math.max(root.expandedHeight + 80, 240)
 
     mask: Region {
         Region {
@@ -34,6 +33,49 @@ PanelWindow {
         }
         Region {
             item: edgeTrigger
+        }
+        // Screen Frame regions (hollow central screen passes all input through)
+        Region {
+            x: 0
+            y: 0
+            width: (root.frameEnabled && !root.hasFullscreen) ? root.width : 0
+            height: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
+        }
+        Region {
+            x: 0
+            y: 0
+            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
+            height: (root.frameEnabled && !root.hasFullscreen) ? (root.height - root.barHeight) : 0
+        }
+        Region {
+            x: (root.frameEnabled && !root.hasFullscreen) ? (root.width - root.frameThickness) : 0
+            y: 0
+            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
+            height: (root.frameEnabled && !root.hasFullscreen) ? (root.height - root.barHeight) : 0
+        }
+        Region {
+            x: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
+            y: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
+            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
+            height: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
+        }
+        Region {
+            x: (root.frameEnabled && !root.hasFullscreen) ? (root.width - root.frameThickness - root.frameRounding) : 0
+            y: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
+            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
+            height: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
+        }
+        Region {
+            x: (root.frameEnabled && !root.hasFullscreen) ? root.frameThickness : 0
+            y: (root.frameEnabled && !root.hasFullscreen) ? (root.height - root.barHeight - root.frameRounding) : 0
+            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
+            height: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
+        }
+        Region {
+            x: (root.frameEnabled && !root.hasFullscreen) ? (root.width - root.frameThickness - root.frameRounding) : 0
+            y: (root.frameEnabled && !root.hasFullscreen) ? (root.height - root.barHeight - root.frameRounding) : 0
+            width: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
+            height: (root.frameEnabled && !root.hasFullscreen) ? root.frameRounding : 0
         }
     }
 
@@ -135,27 +177,41 @@ PanelWindow {
         }
     }
 
+    // ==========================================
+    // CAELESTIA SCREEN FRAME (BORDER) CONFIGURATION
+    // ==========================================
+    property bool frameEnabled: rawNotchSettings.frameEnabled !== undefined ? Boolean(rawNotchSettings.frameEnabled) : true
+    property real frameThickness: rawNotchSettings.frameThickness !== undefined ? Number(rawNotchSettings.frameThickness) : 10
+    property real frameRounding: rawNotchSettings.frameRounding !== undefined ? Number(rawNotchSettings.frameRounding) : 24
+    readonly property real barHeight: {
+        if (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.height !== undefined) {
+            return Number(Config.rawSettings.bar.height);
+        }
+        return 46;
+    }
+    readonly property bool hasFullscreen: {
+        if (typeof ToplevelManager !== "undefined" && ToplevelManager.activeToplevel) {
+            return Boolean(ToplevelManager.activeToplevel.fullscreen);
+        }
+        return false;
+    }
+
     readonly property bool isMusicPlaying: (typeof MprisController !== "undefined") && MprisController.isPlaying
     // ==========================================
     // CAELESTIA SIGNATURE FLUID MORPH CURVES
-    // Extracted directly from Caelestia Shell (tokens.hpp / anim.cpp):
-    // 1. expressiveSpatial: [0.38, 1.14, 0.22, 1.0, 1.0, 1.0] -> fluid spring overshoot
-    // 2. emphasized: [0.05, 0.0, 0.1333, 0.06, 0.1667, 0.4, 0.2083, 0.82, 0.25, 1.0, 1.0, 1.0] -> MD3 silky decel
-    // 3. emphasizedAccel: [0.3, 0.0, 0.8, 0.15, 1.0, 1.0] -> clean closing acceleration
-    // 4. expressiveEffects: [0.34, 0.8, 0.34, 1.0, 1.0, 1.0] -> smooth fade
+    // Fast, smooth, with subtle organic spring bounce
     // ==========================================
-    readonly property var caelestiaMorphExpand: [0.38, 1.14, 0.22, 1.0, 1.0, 1.0]
+    readonly property var caelestiaMorphExpand: [0.38, 1.15, 0.22, 1.0, 1.0, 1.0]
     readonly property var caelestiaSmoothExpand: [0.05, 0.0, 0.133333, 0.06, 0.166667, 0.4, 0.208333, 0.82, 0.25, 1.0, 1.0, 1.0]
     readonly property var caelestiaAccel: [0.3, 0.0, 0.8, 0.15, 1.0, 1.0]
-    readonly property var caelestiaEffects: [0.34, 0.8, 0.34, 1.0, 1.0, 1.0]
 
     readonly property real targetConcaveRadius: root.expanded ? 14 : 12
     readonly property real targetConvexRadius: root.expanded ? 24 : 17
     readonly property real concaveRadius: currentRTop
     readonly property real convexRadius: currentRBottom
 
-    readonly property int animDurationExpand: 560
-    readonly property int animDurationCollapse: 380
+    readonly property int animDurationExpand: 420
+    readonly property int animDurationCollapse: 320
     readonly property int animDuration: root.expanded ? animDurationExpand : animDurationCollapse
 
     readonly property real targetW: root.expandedWidth
@@ -273,10 +329,113 @@ PanelWindow {
     }
 
     // ==========================================
+    // CAELESTIA UNIFIED SCREEN FRAME
+    // ==========================================
+    Item {
+        id: screenFrameContainer
+        anchors.fill: parent
+        visible: root.frameEnabled
+        opacity: root.hasFullscreen ? 0.0 : 1.0
+        z: 1
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 250
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        // 1. Top border (merges flush with notch top flares)
+        Rectangle {
+            id: topFrame
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: root.frameThickness
+            color: ThemeBackend.base
+        }
+
+        // 2. Left border (runs down to meet bottom bar)
+        Rectangle {
+            id: leftFrame
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: root.barHeight
+            anchors.left: parent.left
+            width: root.frameThickness
+            color: ThemeBackend.base
+        }
+
+        // 3. Right border (runs down to meet bottom bar)
+        Rectangle {
+            id: rightFrame
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: root.barHeight
+            anchors.right: parent.right
+            width: root.frameThickness
+            color: ThemeBackend.base
+        }
+
+        // 4. Top-Left Inner Corner Fillet
+        ShaderEffect {
+            id: cornerTL
+            x: root.frameThickness
+            y: root.frameThickness
+            width: root.frameRounding
+            height: root.frameRounding
+            property vector2d itemSize: Qt.vector2d(width, height)
+            property real cornerIndex: 0.0
+            property color color: ThemeBackend.base
+            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
+        }
+
+        // 5. Top-Right Inner Corner Fillet
+        ShaderEffect {
+            id: cornerTR
+            x: parent.width - root.frameThickness - width
+            y: root.frameThickness
+            width: root.frameRounding
+            height: root.frameRounding
+            property vector2d itemSize: Qt.vector2d(width, height)
+            property real cornerIndex: 1.0
+            property color color: ThemeBackend.base
+            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
+        }
+
+        // 6. Bottom-Left Inner Corner Fillet (merges left border into bottom bar)
+        ShaderEffect {
+            id: cornerBL
+            x: root.frameThickness
+            y: parent.height - root.barHeight - height
+            width: root.frameRounding
+            height: root.frameRounding
+            property vector2d itemSize: Qt.vector2d(width, height)
+            property real cornerIndex: 2.0
+            property color color: ThemeBackend.base
+            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
+        }
+
+        // 7. Bottom-Right Inner Corner Fillet (merges right border into bottom bar)
+        ShaderEffect {
+            id: cornerBR
+            x: parent.width - root.frameThickness - width
+            y: parent.height - root.barHeight - height
+            width: root.frameRounding
+            height: root.frameRounding
+            property vector2d itemSize: Qt.vector2d(width, height)
+            property real cornerIndex: 3.0
+            property color color: ThemeBackend.base
+            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
+        }
+    }
+
+    // ==========================================
     // NOTCH CONTAINER & SHAPE
     // ==========================================
     Item {
         id: notchContainer
+        z: 2
         width: Math.round(root.currentW)
         height: Math.round(root.currentH)
         anchors.horizontalCenter: parent.horizontalCenter
@@ -447,7 +606,7 @@ PanelWindow {
 
                 Behavior on y {
                     NumberAnimation {
-                        duration: root.expanded ? 240 : 360
+                        duration: root.expanded ? 200 : 300
                         easing.type: Easing.BezierSpline
                         easing.bezierCurve: root.expanded ? root.caelestiaAccel : root.caelestiaMorphExpand
                     }
