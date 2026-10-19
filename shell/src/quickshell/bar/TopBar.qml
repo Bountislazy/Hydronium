@@ -564,10 +564,10 @@ Item {
         y: barWindow ? barWindow.baseOffsetY : 0
         color: Qt.alpha(ThemeBackend.base, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
         radius: isFill ? 0 : ThemeBackend.borderRadius
-        topLeftRadius: isFill ? (contentWrapper.barAtBottom ? (contentWrapper.fillAttachProgress > 0 ? contentWrapper.fillFarRadius : contentWrapper.cornerRadius) : 0) : radius
-        topRightRadius: isFill ? (contentWrapper.barAtBottom ? (contentWrapper.fillAttachProgress > 0 ? contentWrapper.fillFarRadius : contentWrapper.cornerRadius) : 0) : radius
-        bottomLeftRadius: isFill ? (contentWrapper.barAtBottom ? 0 : (contentWrapper.fillAttachProgress > 0 ? contentWrapper.fillFarRadius : contentWrapper.cornerRadius)) : radius
-        bottomRightRadius: isFill ? (contentWrapper.barAtBottom ? 0 : (contentWrapper.fillAttachProgress > 0 ? contentWrapper.fillFarRadius : contentWrapper.cornerRadius)) : radius
+        topLeftRadius: isFill ? 0 : radius
+        topRightRadius: isFill ? 0 : radius
+        bottomLeftRadius: isFill ? 0 : radius
+        bottomRightRadius: isFill ? 0 : radius
         border.width: (isSolid || isFill) ? 0 : 1
         border.color: (isSolid || isFill) ? "transparent" : Qt.alpha(ThemeBackend.surface0, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
         visible: (isSolid || isFill) && (barWindow ? !barWindow.positionChanging : true)

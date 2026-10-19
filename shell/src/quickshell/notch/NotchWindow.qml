@@ -35,16 +35,16 @@ PanelWindow {
             item: edgeTrigger
         }
         Region {
-            item: (root.frameEnabled && !root.hasFullscreen) ? topFrame : null
+            item: (root.frameEnabled && !root.hasFullscreen) ? topMaskStrip : null
         }
         Region {
-            item: (root.frameEnabled && !root.hasFullscreen) ? leftFrame : null
+            item: (root.frameEnabled && !root.hasFullscreen) ? leftMaskStrip : null
         }
         Region {
-            item: (root.frameEnabled && !root.hasFullscreen) ? rightFrame : null
+            item: (root.frameEnabled && !root.hasFullscreen) ? rightMaskStrip : null
         }
         Region {
-            item: (root.frameEnabled && !root.hasFullscreen && bottomFrame.visible) ? bottomFrame : null
+            item: (root.frameEnabled && !root.hasFullscreen && bottomMaskStrip.visible) ? bottomMaskStrip : null
         }
     }
 
@@ -299,14 +299,59 @@ PanelWindow {
     }
 
     // ==========================================
-    // CAELESTIA UNIFIED SCREEN FRAME
+    // FRAME MASK HELPER (Interactive input regions)
     // ==========================================
     Item {
-        id: screenFrameContainer
+        id: frameMaskHelper
         anchors.fill: parent
+        visible: false
+
+        Item {
+            id: topMaskStrip
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: root.frameThickness
+        }
+
+        Item {
+            id: leftMaskStrip
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: root.barHeight
+            anchors.left: parent.left
+            width: root.frameThickness
+        }
+
+        Item {
+            id: rightMaskStrip
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: root.barHeight
+            anchors.right: parent.right
+            width: root.frameThickness
+        }
+
+        Item {
+            id: bottomMaskStrip
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: root.frameThickness
+            visible: root.barHeight <= 0
+        }
+    }
+
+    // ==========================================
+    // CAELESTIA UNIFIED SCREEN FRAME + NOTCH SHAPE
+    // Single continuous geometric canvas
+    // ==========================================
+    Shape {
+        id: unifiedFrameShape
+        anchors.fill: parent
+        z: 1
         visible: root.frameEnabled
         opacity: root.hasFullscreen ? 0.0 : 1.0
-        z: 1
 
         Behavior on opacity {
             NumberAnimation {
@@ -316,6 +361,7 @@ PanelWindow {
         }
 
         layer.enabled: true
+        preferredRendererType: Shape.GeometryRenderer
         layer.effect: MultiEffect {
             shadowEnabled: true
             blurMax: 32
@@ -326,68 +372,142 @@ PanelWindow {
             shadowVerticalOffset: 0
         }
 
-        // 1. Top border (Atas: 0, 0, 1, 1)
-        Rectangle {
-            id: topFrame
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: root.frameThickness
-            color: root.frameColor
-            topLeftRadius: 0
-            topRightRadius: 0
-            bottomLeftRadius: root.frameRounding
-            bottomRightRadius: root.frameRounding
-        }
+        readonly property real w: root.width
+        readonly property real h: root.height
+        readonly property real t: root.frameThickness
+        readonly property real r: Math.max(8, root.frameRounding)
+        readonly property bool hasBar: root.barHeight > 0
+        readonly property real barH: root.barHeight > 0 ? root.barHeight : t
+        readonly property real bottomOuterY: hasBar ? (h - barH) : h
+        readonly property real bottomInnerY: hasBar ? (h - barH) : (h - t)
 
-        // 2. Left border (Kiri: 0, 1, 0, 1)
-        Rectangle {
-            id: leftFrame
-            anchors.top: topFrame.bottom
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: root.barHeight
-            anchors.left: parent.left
-            width: root.frameThickness
-            color: root.frameColor
-            topLeftRadius: 0
-            topRightRadius: root.frameRounding
-            bottomLeftRadius: 0
-            bottomRightRadius: root.frameRounding
-        }
+        readonly property real notchW: Math.round(root.currentW)
+        readonly property real notchLeft: Math.round((w - notchW) / 2)
+        readonly property real notchRight: notchLeft + notchW
+        readonly property real notchBottom: Math.max(t, notchContainer.y + notchContainer.height)
+        readonly property real dropdownH: Math.max(0, notchBottom - t)
 
-        // 3. Right border (Kanan: 1, 0, 1, 0)
-        Rectangle {
-            id: rightFrame
-            anchors.top: topFrame.bottom
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: root.barHeight
-            anchors.right: parent.right
-            width: root.frameThickness
-            color: root.frameColor
-            topLeftRadius: root.frameRounding
-            topRightRadius: 0
-            bottomLeftRadius: root.frameRounding
-            bottomRightRadius: 0
-        }
+        readonly property real effRTop: Math.min(root.concaveRadius, dropdownH * 0.4)
+        readonly property real effRBottom: Math.min(root.convexRadius, dropdownH * 0.6)
 
-        // 4. Bottom border (Bawah: 1, 1, 0, 0 - active if bar is not present)
-        Rectangle {
-            id: bottomFrame
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: root.frameThickness
-            color: root.frameColor
-            visible: root.barHeight <= 0
-            topLeftRadius: root.frameRounding
-            topRightRadius: root.frameRounding
-            bottomLeftRadius: 0
-            bottomRightRadius: 0
+        ShapePath {
+            strokeWidth: -1
+            strokeColor: "transparent"
+            fillColor: root.frameColor
+
+            // 1. Top outer edge (left to right)
+            startX: 0
+            startY: 0
+            PathLine { x: unifiedFrameShape.w; y: 0 }
+
+            // 2. Right outer edge (top to bottom bar)
+            PathLine { x: unifiedFrameShape.w; y: unifiedFrameShape.bottomOuterY }
+
+            // 3. Bottom-right concave fillet (scoops corner into bottom bar)
+            PathLine { x: unifiedFrameShape.w - unifiedFrameShape.t - unifiedFrameShape.r; y: unifiedFrameShape.bottomInnerY }
+            PathQuad {
+                x: unifiedFrameShape.w - unifiedFrameShape.t
+                y: unifiedFrameShape.bottomInnerY - unifiedFrameShape.r
+                controlX: unifiedFrameShape.w - unifiedFrameShape.t
+                controlY: unifiedFrameShape.bottomInnerY
+            }
+
+            // 4. Right border inner edge (bottom to top)
+            PathLine { x: unifiedFrameShape.w - unifiedFrameShape.t; y: unifiedFrameShape.t + unifiedFrameShape.r }
+
+            // 5. Top-right concave fillet (scoops corner between top and right borders)
+            PathQuad {
+                x: unifiedFrameShape.w - unifiedFrameShape.t - unifiedFrameShape.r
+                y: unifiedFrameShape.t
+                controlX: unifiedFrameShape.w - unifiedFrameShape.t
+                controlY: unifiedFrameShape.t
+            }
+
+            // 6. Top border edge to right side of notch
+            PathLine { x: unifiedFrameShape.notchRight; y: unifiedFrameShape.t }
+
+            // 7. Notch right concave flare
+            PathQuad {
+                x: unifiedFrameShape.notchRight - unifiedFrameShape.effRTop
+                y: unifiedFrameShape.t + unifiedFrameShape.effRTop
+                controlX: unifiedFrameShape.notchRight - unifiedFrameShape.effRTop
+                controlY: unifiedFrameShape.t
+            }
+
+            // 8. Notch right vertical edge
+            PathLine {
+                x: unifiedFrameShape.notchRight - unifiedFrameShape.effRTop
+                y: unifiedFrameShape.notchBottom - unifiedFrameShape.effRBottom
+            }
+
+            // 9. Notch bottom-right convex corner
+            PathQuad {
+                x: unifiedFrameShape.notchRight - unifiedFrameShape.effRTop - unifiedFrameShape.effRBottom
+                y: unifiedFrameShape.notchBottom
+                controlX: unifiedFrameShape.notchRight - unifiedFrameShape.effRTop
+                controlY: unifiedFrameShape.notchBottom
+            }
+
+            // 10. Notch bottom edge
+            PathLine {
+                x: unifiedFrameShape.notchLeft + unifiedFrameShape.effRTop + unifiedFrameShape.effRBottom
+                y: unifiedFrameShape.notchBottom
+            }
+
+            // 11. Notch bottom-left convex corner
+            PathQuad {
+                x: unifiedFrameShape.notchLeft + unifiedFrameShape.effRTop
+                y: unifiedFrameShape.notchBottom - unifiedFrameShape.effRBottom
+                controlX: unifiedFrameShape.notchLeft + unifiedFrameShape.effRTop
+                controlY: unifiedFrameShape.notchBottom
+            }
+
+            // 12. Notch left vertical edge
+            PathLine {
+                x: unifiedFrameShape.notchLeft + unifiedFrameShape.effRTop
+                y: unifiedFrameShape.t + unifiedFrameShape.effRTop
+            }
+
+            // 13. Notch left concave flare
+            PathQuad {
+                x: unifiedFrameShape.notchLeft
+                y: unifiedFrameShape.t
+                controlX: unifiedFrameShape.notchLeft + unifiedFrameShape.effRTop
+                controlY: unifiedFrameShape.t
+            }
+
+            // 14. Top border edge to top-left corner
+            PathLine { x: unifiedFrameShape.t + unifiedFrameShape.r; y: unifiedFrameShape.t }
+
+            // 15. Top-left concave fillet (scoops corner between top and left borders)
+            PathQuad {
+                x: unifiedFrameShape.t
+                y: unifiedFrameShape.t + unifiedFrameShape.r
+                controlX: unifiedFrameShape.t
+                controlY: unifiedFrameShape.t
+            }
+
+            // 16. Left border inner edge (top to bottom)
+            PathLine { x: unifiedFrameShape.t; y: unifiedFrameShape.bottomInnerY - unifiedFrameShape.r }
+
+            // 17. Bottom-left concave fillet (scoops corner into bottom bar)
+            PathQuad {
+                x: unifiedFrameShape.t + unifiedFrameShape.r
+                y: unifiedFrameShape.bottomInnerY
+                controlX: unifiedFrameShape.t
+                controlY: unifiedFrameShape.bottomInnerY
+            }
+
+            // 18. Bottom edge of left border
+            PathLine { x: 0; y: unifiedFrameShape.bottomOuterY }
+
+            // 19. Left outer edge back to top-left
+            PathLine { x: 0; y: 0 }
         }
     }
 
     // ==========================================
-    // NOTCH CONTAINER & SHAPE
+    // NOTCH CONTAINER (Content Clipper & Mouse Interaction)
     // ==========================================
     Item {
         id: notchContainer
@@ -453,93 +573,6 @@ PanelWindow {
                     root.toggle();
                 } else if (!root.expanded) {
                     root.expand();
-                }
-            }
-        }
-
-        // Notch macOS-style Shape:
-        // Concave top corners merging flush into screen bezel, convex bottom corners
-        Shape {
-            id: notchShape
-            anchors.fill: parent
-            layer.enabled: true
-            preferredRendererType: Shape.GeometryRenderer
-            layer.effect: MultiEffect {
-                shadowEnabled: true
-                shadowColor: "#000000"
-                shadowVerticalOffset: 4
-                shadowHorizontalOffset: 0
-                shadowBlur: 0.5
-                shadowOpacity: 0.55
-            }
-
-            property real w: notchContainer.width
-            property real h: notchContainer.height
-            property real rTop: Math.max(4, Math.min(root.concaveRadius, h / 2, w / 4))
-            property real rBottom: Math.max(4, Math.min(root.convexRadius, h / 2, w / 4))
-
-            ShapePath {
-                strokeWidth: 1
-                strokeColor: Qt.alpha(ThemeBackend.surface1, 0.45)
-                fillColor: ThemeBackend.base
-
-                startX: 0
-                startY: 0
-
-                // 1. Top-left concave flare
-                PathQuad {
-                    x: notchShape.rTop
-                    y: notchShape.rTop
-                    controlX: notchShape.rTop
-                    controlY: 0
-                }
-
-                // 2. Left vertical edge
-                PathLine {
-                    x: notchShape.rTop
-                    y: notchShape.h - notchShape.rBottom
-                }
-
-                // 3. Bottom-left convex round
-                PathQuad {
-                    x: notchShape.rTop + notchShape.rBottom
-                    y: notchShape.h
-                    controlX: notchShape.rTop
-                    controlY: notchShape.h
-                }
-
-                // 4. Bottom horizontal edge
-                PathLine {
-                    x: notchShape.w - notchShape.rTop - notchShape.rBottom
-                    y: notchShape.h
-                }
-
-                // 5. Bottom-right convex round
-                PathQuad {
-                    x: notchShape.w - notchShape.rTop
-                    y: notchShape.h - notchShape.rBottom
-                    controlX: notchShape.w - notchShape.rTop
-                    controlY: notchShape.h
-                }
-
-                // 6. Right vertical edge
-                PathLine {
-                    x: notchShape.w - notchShape.rTop
-                    y: notchShape.rTop
-                }
-
-                // 7. Top-right concave flare
-                PathQuad {
-                    x: notchShape.w
-                    y: 0
-                    controlX: notchShape.w - notchShape.rTop
-                    controlY: 0
-                }
-
-                // 8. Top horizontal edge (flush with top screen edge)
-                PathLine {
-                    x: 0
-                    y: 0
                 }
             }
         }
