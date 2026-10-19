@@ -13,9 +13,10 @@ Item {
         ? DateTime.timeShort
         : Qt.formatDateTime(new Date(), "HH:mm")
 
-    anchors.fill: parent
-    anchors.leftMargin: windowRoot.concaveRadius + 8
-    anchors.rightMargin: windowRoot.concaveRadius + 8
+    implicitWidth: windowRoot ? ((windowRoot.isMusicPlaying ? windowRoot.collapsedMusicWidth : windowRoot.collapsedWidth) - (windowRoot.concaveRadius + 8) * 2) : 180
+    implicitHeight: windowRoot ? windowRoot.collapsedHeight : 34
+    width: implicitWidth
+    height: implicitHeight
 
     // State A: Idle (No music playing) - Clean centered clock
     Item {

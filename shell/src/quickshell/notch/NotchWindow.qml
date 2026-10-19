@@ -136,9 +136,14 @@ PanelWindow {
     }
 
     readonly property bool isMusicPlaying: (typeof MprisController !== "undefined") && MprisController.isPlaying
-    readonly property real concaveRadius: root.expanded ? 14 : 12
-    readonly property real convexRadius: root.expanded ? 22 : 16
-    readonly property int animDuration: 340
+    readonly property real targetConcaveRadius: root.expanded ? 14 : 12
+    readonly property real targetConvexRadius: root.expanded ? 22 : 16
+    readonly property real concaveRadius: currentRTop
+    readonly property real convexRadius: currentRBottom
+
+    readonly property int animDurationExpand: 540
+    readonly property int animDurationCollapse: 380
+    readonly property int animDuration: root.expanded ? animDurationExpand : animDurationCollapse
 
     readonly property real targetW: root.expanded
         ? root.expandedWidth
@@ -149,20 +154,34 @@ PanelWindow {
 
     property real currentW: targetW
     property real currentH: targetH
+    property real currentRTop: targetConcaveRadius
+    property real currentRBottom: targetConvexRadius
 
     Behavior on currentW {
         NumberAnimation {
             duration: root.animDuration
-            easing.type: root.expanded ? Easing.OutBack : Easing.OutCubic
-            easing.overshoot: root.expanded ? 1.15 : 1.0
+            easing.type: root.expanded ? Easing.OutCubic : Easing.InOutCubic
         }
     }
 
     Behavior on currentH {
         NumberAnimation {
             duration: root.animDuration
-            easing.type: root.expanded ? Easing.OutBack : Easing.OutCubic
-            easing.overshoot: root.expanded ? 1.15 : 1.0
+            easing.type: root.expanded ? Easing.OutCubic : Easing.InOutCubic
+        }
+    }
+
+    Behavior on currentRTop {
+        NumberAnimation {
+            duration: root.animDuration
+            easing.type: root.expanded ? Easing.OutCubic : Easing.InOutCubic
+        }
+    }
+
+    Behavior on currentRBottom {
+        NumberAnimation {
+            duration: root.animDuration
+            easing.type: root.expanded ? Easing.OutCubic : Easing.InOutCubic
         }
     }
 
@@ -265,8 +284,7 @@ PanelWindow {
         Behavior on y {
             NumberAnimation {
                 duration: root.animDuration
-                easing.type: root.isRevealed ? Easing.OutBack : Easing.InCubic
-                easing.overshoot: root.isRevealed ? 1.06 : 1.0
+                easing.type: root.isRevealed ? Easing.OutCubic : Easing.InOutCubic
             }
         }
 
@@ -331,15 +349,14 @@ PanelWindow {
             id: notchShape
             anchors.fill: parent
             layer.enabled: true
-            layer.samples: 4
             preferredRendererType: Shape.GeometryRenderer
             layer.effect: MultiEffect {
                 shadowEnabled: true
                 shadowColor: "#000000"
                 shadowVerticalOffset: 4
                 shadowHorizontalOffset: 0
-                shadowBlur: 0.6
-                shadowOpacity: 0.65
+                shadowBlur: 0.5
+                shadowOpacity: 0.55
             }
 
             property real w: notchContainer.width
@@ -414,50 +431,72 @@ PanelWindow {
         }
 
         // ==========================================
-        // CONTENT CROSSFADE
+        // CONTENT CLIPPING & CROSSFADE
         // ==========================================
+        Item {
+            id: contentClipper
+            anchors.fill: parent
+            clip: true
 
-        // Collapsed View
-        NotchCollapsedView {
-            windowRoot: root
-            opacity: root.expanded ? 0.0 : 1.0
-            scale: root.expanded ? 0.92 : 1.0
-            visible: opacity > 0
+            // Collapsed View (Pill header: Clock, Mini visualizer, Track marquee)
+            Item {
+                id: collapsedWrapper
+                anchors.fill: parent
+                opacity: root.expanded ? 0.0 : 1.0
+                scale: root.expanded ? 0.94 : 1.0
+                visible: opacity > 0
 
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: Math.round(root.animDuration * 0.6)
-                    easing.type: Easing.OutCubic
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: root.expanded ? 140 : 260
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: root.expanded ? 180 : 300
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                NotchCollapsedView {
+                    windowRoot: root
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
                 }
             }
 
-            Behavior on scale {
-                NumberAnimation {
-                    duration: Math.round(root.animDuration * 0.7)
-                    easing.type: Easing.OutCubic
+            // Expanded View (Full Caelestia Dashboard: Tabs, Grid, Media, Lyrics, Meters)
+            Item {
+                id: expandedWrapper
+                anchors.fill: parent
+                opacity: root.expanded ? 1.0 : 0.0
+                visible: opacity > 0
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: root.expanded ? 340 : 160
+                        easing.type: Easing.OutCubic
+                    }
                 }
-            }
-        }
 
-        // Expanded View
-        NotchExpandedView {
-            windowRoot: root
-            opacity: root.expanded ? 1.0 : 0.0
-            scale: root.expanded ? 1.0 : 0.92
-            visible: opacity > 0
+                NotchExpandedView {
+                    id: expandedViewContent
+                    windowRoot: root
+                    anchors.top: parent.top
+                    anchors.topMargin: 10
+                    anchors.horizontalCenter: parent.horizontalCenter
 
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: Math.round(root.animDuration * 0.75)
-                    easing.type: Easing.OutCubic
-                }
-            }
+                    scale: root.expanded ? 1.0 : 0.96
+                    transformOrigin: Item.Top
 
-            Behavior on scale {
-                NumberAnimation {
-                    duration: root.animDuration
-                    easing.type: Easing.OutBack
-                    easing.overshoot: 1.1
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: root.expanded ? root.animDuration : 200
+                            easing.type: Easing.OutCubic
+                        }
+                    }
                 }
             }
         }

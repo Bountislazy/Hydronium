@@ -121,11 +121,10 @@ Item {
         return mb.toFixed(1) + " M/s";
     }
 
-    anchors.fill: parent
-    anchors.leftMargin: windowRoot.concaveRadius + 14
-    anchors.rightMargin: windowRoot.concaveRadius + 14
-    anchors.topMargin: 10
-    anchors.bottomMargin: 14
+    implicitWidth: windowRoot ? (windowRoot.expandedWidth - (windowRoot.concaveRadius + 14) * 2) : 760
+    implicitHeight: windowRoot ? (windowRoot.expandedHeight - 24) : 376
+    width: implicitWidth
+    height: implicitHeight
 
     ColumnLayout {
         anchors.fill: parent
