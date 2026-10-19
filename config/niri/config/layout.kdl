@@ -1,0 +1,25 @@
+layout {
+    gaps 8
+
+    struts {
+        top 4
+        bottom 8
+    }
+
+    border {
+        off
+    }
+
+    focus-ring {
+        off
+    }
+
+    shadow {
+        on
+        softness 32
+        spread 5
+        offset x=0 y=6
+        color "#000000bb"
+        inactive-color "#00000035"
+    }
+}

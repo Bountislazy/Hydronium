@@ -1,0 +1,14 @@
+# Logs & Caches
+*.log
+*.qslog
+*.cache
+__pycache__/
+*.pyc
+
+# Temporary & backup files
+*.bak*
+*.tmp
+*~
+
+# Quickshell runtime sockets
+*.sock

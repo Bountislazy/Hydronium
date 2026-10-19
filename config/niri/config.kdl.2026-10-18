@@ -1,0 +1,9 @@
+include "config/env.kdl"
+include "config/input.kdl"
+include "config/output.kdl"
+include "config/layout.kdl"
+include "config/autostart.kdl"
+include "config/keybinds.kdl"
+include "config/animation.kdl"
+include "config/rules.kdl"
+prefer-no-csd

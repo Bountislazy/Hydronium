@@ -1,0 +1,16 @@
+include "config/env.kdl"
+include "config/input.kdl"
+include "config/output.kdl"
+include "config/layout.kdl"
+include "config/autostart.kdl"
+include "config/keybinds.kdl"
+include "config/animation.kdl"
+include "config/rules.kdl"
+prefer-no-csd
+
+window-rule {
+    match app-id=r#"^[Ww]aydroid(\..*)?$"#
+    open-floating true
+    default-column-width { fixed 1280; }
+    default-window-height { fixed 720; }
+}

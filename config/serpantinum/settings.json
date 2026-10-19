@@ -1,0 +1,269 @@
+{
+  "general": {
+    "language": "en",
+    "avatarPath": "/home/bountis/Gambar/Wallpapers/Anime/dandadan.jpg",
+    "muteSfx": false,
+    "weatherInterval": 15,
+    "weatherUnit": "metric",
+    "location": {
+      "ip": "157.20.91.157",
+      "latitude": -4.86667,
+      "longitude": 105.23333,
+      "city": "Terbanggi Besar",
+      "region": "Lampung",
+      "region_code": "LA",
+      "country_name": "Indonesia",
+      "country_code": "ID",
+      "postal": null,
+      "timezone": "Asia/Jakarta",
+      "utc_offset": "+0700",
+      "currency": "IDR",
+      "languages": "id,en,nl,jv",
+      "asn": "AS152395",
+      "org": "PT Giga Global Network",
+      "source": "ipapi.co",
+      "updated_at": 1792258398
+    },
+    "sfxVolume": 100,
+    "screenshotCaptureOnRelease": false,
+    "quickactions": false
+  },
+  "syspanel": {
+    "clipExpandProgress": 0,
+    "clipExpanded": false,
+    "clipState": 1
+  },
+  "notch": {
+    "enabled": true,
+    "autoHide": true,
+    "collapsedWidth": 200,
+    "collapsedWidthMusic": 290,
+    "collapsedHeight": 34,
+    "expandedWidth": 820,
+    "expandedHeight": 400,
+    "topOffset": 0,
+    "triggerMode": "hover",
+    "unhoverDelay": 300,
+    "showCpu": true,
+    "showRam": true,
+    "showTemp": true,
+    "showBattery": true,
+    "showNetwork": true,
+    "hideBarCenter": false
+  },
+  "bar": {
+    "position": "bottom",
+    "width": 100,
+    "height": 46,
+    "opacity": 100,
+    "style": "fill",
+    "time": {
+      "format": "HH:mm:ss"
+    },
+    "autohide": false,
+    "autohideTimeout": 1000,
+    "modules": {
+      "left": [
+        "left",
+        "workspaces"
+      ],
+      "center": [
+        "focus"
+      ],
+      "right": [
+        "tray",
+        [
+          "kb",
+          "wifi",
+          "bt",
+          "vol",
+          "bat"
+        ]
+      ]
+    },
+    "distinctPills": false,
+    "centerByEdges": true,
+    "groupColors": {
+      "g_kb": "#5a3d59"
+    },
+    "menuStyle": "icon",
+    "workspacesStyle": "numbers",
+    "timeShowDate": true,
+    "timeStyle": "classic",
+    "visAlignment": "top",
+    "visContinuous": false,
+    "sysmonStyle": "wave",
+    "sysmonStats": [],
+    "batShowPercent": true,
+    "batStyle": "text",
+    "wifiStyle": "text",
+    "btStyle": "text",
+    "volStyle": "text",
+    "kbStyle": "text",
+    "mediaInfoMode": "author",
+    "mediaWidth": 121,
+    "mediaShowIcon": false,
+    "mediaShowControls": false,
+    "kbShowIcon": false
+  },
+  "theme": {
+    "fontFamily": "Adwaita Mono",
+    "borderRadius": 10,
+    "activePreset": "Matugen",
+    "matugen": true,
+    "colors": {
+      "base": "#000000",
+      "blue": "#ffffff",
+      "crust": "#000000",
+      "green": "#ffffff",
+      "mantle": "#050505",
+      "maroon": "#808080",
+      "mauve": "#d0d0d0",
+      "overlay0": "#5a5a5a",
+      "overlay1": "#7a7a7a",
+      "overlay2": "#9a9a9a",
+      "peach": "#cccccc",
+      "pink": "#e0e0e0",
+      "red": "#a0a0a0",
+      "sapphire": "#e0e0e0",
+      "subtext0": "#a0a0a0",
+      "subtext1": "#c0c0c0",
+      "surface0": "#1a1a1a",
+      "surface1": "#2a2a2a",
+      "surface2": "#3a3a3a",
+      "teal": "#c0c0c0",
+      "text": "#ffffff",
+      "yellow": "#ffffff"
+    },
+    "blurBackground": false,
+    "blurStyle": "liquid"
+  },
+  "idle": {
+    "enabled": true,
+    "actions": {
+      "dim": {
+        "id": "dim",
+        "timeout": 150,
+        "enabled": true,
+        "respectInhibitors": true,
+        "mprisInhibit": true,
+        "command": "",
+        "resumeCommand": "",
+        "isCustom": false
+      },
+      "dpms": {
+        "id": "dpms",
+        "timeout": 450,
+        "enabled": true,
+        "respectInhibitors": true,
+        "mprisInhibit": true,
+        "command": "",
+        "resumeCommand": "",
+        "isCustom": false
+      },
+      "lock": {
+        "id": "lock",
+        "timeout": 300,
+        "enabled": true,
+        "respectInhibitors": true,
+        "mprisInhibit": true,
+        "command": "",
+        "resumeCommand": "",
+        "isCustom": false
+      },
+      "suspend": {
+        "id": "suspend",
+        "timeout": 600,
+        "enabled": true,
+        "respectInhibitors": true,
+        "mprisInhibit": true,
+        "command": "",
+        "resumeCommand": "",
+        "isCustom": false
+      }
+    }
+  },
+  "notifications": {
+    "dnd": true,
+    "position": "top right",
+    "sound": true,
+    "soundFile": "/home/bountis/.local/share/serpantinum/src/assets/sounds/notifications/Botanica.wav"
+  },
+  "display": {
+    "monitors": {
+      "eDP-1": {
+        "enabled": false,
+        "scale": 1.25
+      }
+    }
+  },
+  "wallpaperDir": "/home/bountis/Gambar/Wallpapers",
+  "launcher": {
+    "position": "left",
+    "width": 400,
+    "itemCount": 6,
+    "terminalCommand": "kitty -e",
+    "smartRanking": true
+  },
+  "dock": {
+    "enabled": true,
+    "position": "right",
+    "onTop": true,
+    "elementSize": 44,
+    "floating": false,
+    "background": true,
+    "exclusive": false,
+    "autohide": true,
+    "smartAutohide": true,
+    "autohideTimeout": 1000,
+    "editing": false,
+    "apps": [
+      {
+        "name": "ArtCraft Launcher",
+        "comment": "Install, update and launch the Craft App Suite",
+        "desktop_id": "ai.storyteller.artcraft-launcher",
+        "icon": "ai.storyteller.artcraft-launcher"
+      },
+      {
+        "name": "Firefox",
+        "comment": "Fast and private browser",
+        "desktop_id": "firefox",
+        "icon": "firefox"
+      },
+      {
+        "name": "Windows",
+        "comment": "Microsoft Windows RDP Session",
+        "desktop_id": "windows",
+        "icon": "/home/bountis/.local/share/winapps/icons/windows.svg"
+      },
+      {
+        "name": "Berkas",
+        "comment": "Mengakses dan mengelola berkas",
+        "desktop_id": "org.gnome.Nautilus",
+        "icon": "org.gnome.Nautilus"
+      }
+    ],
+    "overrideBoundsCorrection": false,
+    "enableScrolling": false,
+    "visibleElements": 7,
+    "hoverScale": 120,
+    "cascadeScale": false,
+    "focusRunning": true,
+    "showRunningIndicators": true,
+    "showRunningApps": true,
+    "runningScope": "auto"
+  },
+  "osd": {
+    "horizontalPosition": 50,
+    "verticalPosition": 90,
+    "orientation": "horizontal",
+    "showCapsLock": true,
+    "showNumLock": true,
+    "showAirplane": true,
+    "attachToBar": true
+  },
+  "inputs": {
+    "passwordReveal": false
+  }
+}
+

@@ -1,0 +1,38 @@
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+}
+
+window-rule {
+    background-effect {
+      blur true
+      xray false
+    }
+}
+
+// Floating file chooser dialogs (xdg-desktop-portal-gtk, nautilus dialogs)
+window-rule {
+    match app-id=r#"^xdg-desktop-portal"#
+    match app-id=r#"^org\.gnome\.Nautilus$"# title=r#"^(Open|Save|Pilih|Simpan)"#
+    open-floating true
+}
+
+// Steam rules
+window-rule {
+    match app-id="steam"
+    exclude title=r#"^[Ss]team$"#
+    open-floating true
+}
+
+window-rule {
+   match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
+   default-floating-position x=10 y=10 relative-to="bottom-right"
+   open-focused false
+}
+
+// Overview backdrop
+layer-rule {
+    match namespace="^wallpaper-backdrop$"
+    place-within-backdrop true
+}
+
