@@ -97,8 +97,11 @@ Hydronium/
 │   └── src/scripts/       # Script runtime (reload, qs_manager, weather)
 ├── config/                # Berkas dotfiles (~/.config)
 │   ├── serpantinum/       # settings.json
+│   ├── hypr/              # Konfigurasi Hyprland Compositor (hyprland.lua)
 │   ├── niri/              # Konfigurasi Niri Compositor (config.kdl)
+│   ├── kitty/             # Terminal Kitty
 │   ├── alacritty/         # Terminal Alacritty
+│   ├── waycorner/         # Konfigurasi hot corners
 │   ├── fish/              # Shell Fish
 │   ├── cava/              # Visualizer audio Cava
 │   └── fastfetch/         # Tampilan info sistem

@@ -1,0 +1,5 @@
+[top_left]
+enter_command = ["qs", "ipc", "-c", "overview", "call", "overview", "toggle"]
+locations = ["top_left"]
+size = 10
+timeout_ms = 100

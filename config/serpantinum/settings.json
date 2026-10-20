@@ -54,14 +54,14 @@
   "bar": {
     "position": "bottom",
     "width": 100,
-    "height": 46,
+    "height": 40,
     "opacity": 100,
     "style": "fill",
     "time": {
       "format": "HH:mm:ss"
     },
     "autohide": false,
-    "autohideTimeout": 1000,
+    "autohideTimeout": 250,
     "modules": {
       "left": [
         "left",
@@ -82,7 +82,7 @@
       ]
     },
     "distinctPills": false,
-    "centerByEdges": true,
+    "centerByEdges": false,
     "groupColors": {
       "g_kb": "#5a3d59"
     },
@@ -109,8 +109,8 @@
   "theme": {
     "fontFamily": "Adwaita Mono",
     "borderRadius": 10,
-    "activePreset": "Matugen",
-    "matugen": true,
+    "activePreset": "Obsidian",
+    "matugen": false,
     "colors": {
       "base": "#000000",
       "blue": "#ffffff",
@@ -136,7 +136,7 @@
       "yellow": "#ffffff"
     },
     "blurBackground": false,
-    "blurStyle": "liquid"
+    "blurStyle": "blur"
   },
   "idle": {
     "enabled": true,
@@ -200,13 +200,13 @@
   "wallpaperDir": "/home/bountis/Gambar/Wallpapers",
   "launcher": {
     "position": "left",
-    "width": 400,
+    "width": 450,
     "itemCount": 6,
     "terminalCommand": "kitty -e",
     "smartRanking": true
   },
   "dock": {
-    "enabled": true,
+    "enabled": false,
     "position": "right",
     "onTop": true,
     "elementSize": 44,

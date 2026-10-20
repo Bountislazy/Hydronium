@@ -120,6 +120,7 @@ backup_target() {
 
 backup_target "$XDG_CONFIG_DIR/serpantinum"
 backup_target "$XDG_CONFIG_DIR/niri"
+backup_target "$XDG_CONFIG_DIR/hypr"
 backup_target "$SHELL_DEST/src"
 
 # ------------------------------------------------------------------------------
