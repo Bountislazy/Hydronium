@@ -142,6 +142,7 @@ for config_dir in "$SCRIPT_DIR/config"/*; do
     if [ -d "$config_dir" ]; then
         cfg_name="$(basename "$config_dir")"
         echo -e "    -> Deploying $XDG_CONFIG_DIR/$cfg_name"
+        backup_target "$XDG_CONFIG_DIR/$cfg_name"
         rm -rf "$XDG_CONFIG_DIR/$cfg_name"
         cp -r "$config_dir" "$XDG_CONFIG_DIR/"
     fi
@@ -162,6 +163,9 @@ fi
 # Patch fish config if present
 if [ -f "$XDG_CONFIG_DIR/fish/config.fish" ]; then
     sed -i -E "s|/home/[^/\"]+|$CURRENT_HOME|g" "$XDG_CONFIG_DIR/fish/config.fish"
+fi
+if [ -f "$XDG_CONFIG_DIR/fish/fish_variables" ]; then
+    sed -i -E "s|/home/[^/\"]+|$CURRENT_HOME|g" "$XDG_CONFIG_DIR/fish/fish_variables"
 fi
 
 echo -e "\033[0;32m[✓] Configuration deployed and paths adapted to $CURRENT_HOME.\033[0m"
